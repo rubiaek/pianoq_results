@@ -13,7 +13,8 @@ LOGS_DIR = "C:\\temp"
 class ScanResult(object):
     coin_window = 4e-9
 
-    def __init__(self, coincidences=None, single1s=None, single2s=None, X=None, Y=None, integration_time=None):
+    def __init__(self, path=None, coincidences=None, single1s=None, single2s=None, X=None, Y=None, integration_time=None):
+        self.path = path
         self.coincidences = coincidences
         self.single1s = single1s
         self.single2s = single2s
@@ -22,6 +23,9 @@ class ScanResult(object):
         self.Y = Y
         self.integration_time = integration_time
 
+        if self.path is not None:
+            self.loadfrom(self.path)
+
     def show(self, show_singles=False, title='', remove_accidentals=True) -> typing.Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]:
         if remove_accidentals:
             coin = self.coincidences - self.accidentals
@@ -29,7 +33,11 @@ class ScanResult(object):
             coin = self.coincidences
 
         fig, ax = plt.subplots()
-        ax.set_title(f'Coincidences {title}')
+        if remove_accidentals:
+            rem_acc = 'no accidentals'
+        else:
+            rem_acc = 'with accidentals'
+        ax.set_title(f'Coincidences {title} - {rem_acc}')
         my_mesh(self.X, self.Y, coin, ax)
         ax.invert_xaxis()
         fig.show()
@@ -45,6 +53,10 @@ class ScanResult(object):
             fig.show()
 
         return fig, ax
+
+    def show_both(self):
+        self.show(show_singles=True, remove_accidentals=True)
+        self.show(show_singles=False, remove_accidentals=False)
 
     def saveto(self, path):
         try:
@@ -88,3 +100,6 @@ class ScanResult(object):
         self.accidentals = self.single1s * self.single2s * 2 * self.coin_window
 
         f.close()
+
+    def reload(self):
+        self.loadfrom(self.path)
