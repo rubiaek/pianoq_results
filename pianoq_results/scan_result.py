@@ -5,7 +5,7 @@ import typing
 import pyperclip
 import traceback
 import glob
-from misc import my_mesh
+from pianoq_results.misc import my_mesh
 
 LOGS_DIR = "C:\\temp"
 
