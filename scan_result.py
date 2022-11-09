@@ -27,6 +27,7 @@ class ScanResult(object):
             self.loadfrom(self.path)
 
     def show(self, show_singles=False, title='', remove_accidentals=True) -> typing.Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]:
+        self.reload()
         if remove_accidentals:
             coin = self.coincidences - self.accidentals
         else:
@@ -87,6 +88,7 @@ class ScanResult(object):
 
         path = path.strip('"')
         path = path.strip("'")
+        self.path = path
 
         f = open(path, 'rb')
         data = np.load(f, allow_pickle=True)
