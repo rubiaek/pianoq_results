@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from polarization_meas_result import PolarizationMeasResult
+from pianoq_results.polarization_meas_result import PolarizationMeasResult
 import traceback
 
 
