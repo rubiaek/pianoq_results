@@ -57,6 +57,16 @@ class PianoPSOOptimizationResult(object):
 
         fig.show()
 
+
+    def plot_costs(self):
+        fig, ax = plt.subplots()
+        ax.plot(-self.costs, '*--', label='measurements')
+        ax.axhline(-self.random_average_cost, label='random average cost', color='g', linestyle='--')
+        ax.set_xlabel('iterations')
+        ax.set_ylabel('cost')
+        ax.legend()
+        fig.show()
+
     @property
     def enhancement(self):
         if self.random_average_cost:
@@ -116,8 +126,10 @@ class PianoPSOOptimizationResult(object):
         if self.random_average_cost:
             self.random_average_cost = self.random_average_cost.item()
 
-        self.normaliztion_to_one = self.images[0].max() / self.exposure_times[0]
-        self.normalized_images = self._get_normalized_images()
+        # In classical optimization. In quantum - we don't have images, only costs
+        if self.images[0] is not None:
+            self.normaliztion_to_one = self.images[0].max() / self.exposure_times[0]
+            self.normalized_images = self._get_normalized_images()
 
         self.good_piezo_indexes = data.get('good_piezo_indexes', None)
         self.max_piezo_voltage = data.get('max_piezo_voltage', None)
