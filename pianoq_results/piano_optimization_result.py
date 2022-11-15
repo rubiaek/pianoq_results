@@ -60,9 +60,9 @@ class PianoPSOOptimizationResult(object):
 
     def plot_costs(self):
         fig, ax = plt.subplots()
-        ax.plot(-self.costs, '*--', label='measurements')
+        ax.plot(self.timestamps / 60, -self.costs, '*--', label='measurements')
         ax.axhline(-self.random_average_cost, label='random average cost', color='g', linestyle='--')
-        ax.set_xlabel('iterations')
+        ax.set_xlabel('time (min)')
         ax.set_ylabel('cost')
         ax.legend()
         fig.show()
