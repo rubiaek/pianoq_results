@@ -1,7 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation, writers
 
 import traceback
+
+from pianoq_results.misc import Player
 
 
 class PianoPSOOptimizationResult(object):
@@ -66,6 +69,38 @@ class PianoPSOOptimizationResult(object):
         ax.set_ylabel('cost')
         ax.legend()
         fig.show()
+
+    def plot_amplitudes(self, amps):
+        fig = plt.figure(figsize = (10,5))
+        ax = fig.add_subplot(1,1,1)
+        ax.set_ylim(0, 1)
+        plt.xlabel("piezo_num")
+        plt.ylabel("amplitude")
+
+        ax.bar(range(len(self.good_piezo_indexes)), amps)  # , color = palette)
+        fig.show()
+
+
+    def animate_amplitudes(self):
+        fig = plt.figure(figsize = (10,5))
+        ax = fig.add_subplot(1,1,1)
+        ax.set_ylim(0, 1)
+        palette = ['blue', 'red', 'green',
+                   'darkorange', 'maroon', 'black']
+
+        def animation_function(i):
+            ax.clear()
+            ax.set_ylim(0, 1)
+            ax.set_title(f"Iteration {i}, Cost {self.costs[i]}")
+            ax.set_xlabel("piezo_num")
+            ax.set_ylabel("amplitude")
+
+            ax.bar(range(len(self.good_piezo_indexes)), self.amplitudes[i])  # , color = palette)
+
+
+
+        animation = Player(fig, animation_function, interval = 500, frames=len(self.amplitudes))
+        plt.show()
 
     @property
     def enhancement(self):
