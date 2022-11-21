@@ -39,6 +39,8 @@ class ScanResult(object):
         else:
             rem_acc = 'with accidentals'
         ax.set_title(f'Coincidences {title} - {rem_acc}')
+        ax.text(16.5, 16.2, f'max acc: {self.accidentals.max() :.0f} \n'
+                      f'max std: {np.sqrt(self.accidentals.max() * self.integration_time) / self.integration_time :.0f}')
         my_mesh(self.X, self.Y, coin, ax)
         ax.invert_xaxis()
         fig.show()
