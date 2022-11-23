@@ -11,9 +11,8 @@ LOGS_DIR = "C:\\temp"
 
 
 class ScanResult(object):
-    coin_window = 4e-9
-
-    def __init__(self, path=None, coincidences=None, single1s=None, single2s=None, X=None, Y=None, integration_time=None):
+    def __init__(self, path=None, coincidences=None, single1s=None, single2s=None, X=None, Y=None,
+                 integration_time=None, coin_window=None, is_timetagger=None):
         self.path = path
         self.coincidences = coincidences
         self.single1s = single1s
@@ -22,6 +21,8 @@ class ScanResult(object):
         self.X = X
         self.Y = Y
         self.integration_time = integration_time
+        self.coin_window = coin_window
+        self.is_timetagger = is_timetagger
 
         if self.path is not None:
             self.loadfrom(self.path)
@@ -70,7 +71,9 @@ class ScanResult(object):
                      single2s=self.single2s,
                      X=self.X,
                      Y=self.Y,
-                     integration_time=self.integration_time)
+                     integration_time=self.integration_time,
+                     coin_window=self.coin_window,
+                     is_timetagger=self.is_timetagger)
             f.close()
         except Exception as e:
             print("ERROR!!")
@@ -100,6 +103,8 @@ class ScanResult(object):
         self.X = data['X']
         self.Y = data['Y']
         self.integration_time = data.get('integration_time', None)
+        self.coin_window = data.get('coin_window', 4e-9)
+        self.is_timetagger = data.get('is_timetagger', False)
 
         self.accidentals = self.single1s * self.single2s * 2 * self.coin_window
 
