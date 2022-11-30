@@ -20,3 +20,9 @@ class QPPickleResult(object):
             obj = pickle.load(f)
             self.__dict__ = obj.__dict__
             self.__class__ = obj.__class__
+
+    def reload(self):
+        if self.path:
+            self.loadfrom(self.path)
+        else:
+            print('No self.path, so can\'t reload')
