@@ -11,6 +11,7 @@ class PianoPSOOptimizationResult(object):
     def __init__(self):
         # Results of experiment
         self.costs = []
+        self.costs_std = []
         self.amplitudes = []
         self.images = []
         self.exposure_times = []
@@ -30,7 +31,12 @@ class PianoPSOOptimizationResult(object):
         self.normalized_images = []
         self.normaliztion_to_one = None
         self.random_average_cost = None
+        self.n_for_average_cost = None
         self.cam_type = None
+
+        self.all_costs = []
+        self.all_costs_std = []
+        self.all_amplitudes = []
 
     def _get_normalized_images(self):
         norm_ims = []
@@ -59,7 +65,6 @@ class PianoPSOOptimizationResult(object):
         axes[1].set_title('After')
 
         fig.show()
-
 
     def plot_costs(self):
         fig, ax = plt.subplots()
@@ -98,7 +103,6 @@ class PianoPSOOptimizationResult(object):
             ax.bar(range(len(self.good_piezo_indexes)), self.amplitudes[i])  # , color = palette)
 
 
-
         animation = Player(fig, animation_function, interval = 500, frames=len(self.amplitudes))
         plt.show()
 
@@ -128,11 +132,13 @@ class PianoPSOOptimizationResult(object):
             f = open(path, 'wb')
             np.savez(f,
                      costs=self.costs,
+                     costs_std=self.costs_std,
                      amplitudes=self.amplitudes,
                      images=self.images,
                      exposure_times=self.exposure_times,
                      timestamps=self.timestamps,
                      random_average_cost=self.random_average_cost,
+                     n_for_average_cost=self.n_for_average_cost,
                      good_piezo_indexes=self.good_piezo_indexes,
                      max_piezo_voltage=self.max_piezo_voltage,
                      roi=self.roi,
@@ -140,8 +146,11 @@ class PianoPSOOptimizationResult(object):
                      n_iterations=self.n_iterations,
                      stop_after_n_const_iters=self.stop_after_n_const_iters,
                      reduce_at_iterations=self.reduce_at_iterations,
-                     cam_type=self.cam_type
-                     )
+                     cam_type=self.cam_type,
+                     all_costs=self.all_costs,
+                     all_costs_std=self.all_costs_std,
+                     all_amplitudes=self.all_amplitudes
+            )
             f.close()
         except Exception as e:
             print("ERROR!!")
@@ -153,11 +162,13 @@ class PianoPSOOptimizationResult(object):
         f = open(path, 'rb')
         data = np.load(f, allow_pickle=True)
         self.costs = data['costs']
+        self.costs_std = data.get('costs_std', [])
         self.amplitudes = data['amplitudes']
         self.images = data['images']
         self.exposure_times = data['exposure_times']
         self.timestamps = data['timestamps']
         self.random_average_cost = data.get('random_average_cost', None)
+        self.n_for_average_cost = data.get('n_for_average_cost', 20)  # before the parameter was introduced it was always 20
         if self.random_average_cost:
             self.random_average_cost = self.random_average_cost.item()
 
@@ -175,3 +186,7 @@ class PianoPSOOptimizationResult(object):
         self.stop_after_n_const_iters = data.get('stop_after_n_const_iters', None)
         self.reduce_at_iterations = data.get('reduce_at_iterations', None)
         self.cam_type = data.get('cam_type', None)
+
+        self.all_costs = data.get('all_costs', [])
+        self.all_costs_std = data.get('all_costs_std', [])
+        self.all_amplitudes = data.get('all_amplitudes', [])
