@@ -10,12 +10,12 @@ from pianoq_results.misc import Player
 class PianoPSOOptimizationResult(object):
     def __init__(self):
         # Results of experiment
-        self.costs = []
+        self.costs = np.array([])
         self.costs_std = []
         self.amplitudes = []
         self.images = []
         self.exposure_times = []
-        self.timestamps = []
+        self.timestamps = np.array([])
 
         # Dac params
         self.good_piezo_indexes = None
@@ -68,23 +68,25 @@ class PianoPSOOptimizationResult(object):
 
     def plot_costs(self):
         fig, ax = plt.subplots()
-        ax.plot(self.timestamps / 60, -self.costs, '*--', label='measurements')
+        ax.errorbar(self.timestamps / 60, -self.costs, self.costs_std, fmt='o--', label='measurements', markersize=4)
+        random_average_std = self.all_costs[:self.n_for_average_cost].std()
         ax.axhline(-self.random_average_cost, label='random average cost', color='g', linestyle='--')
+        ax.axhspan(-self.random_average_cost - random_average_std, -self.random_average_cost + random_average_std,
+                   alpha=0.4, color='g')
         ax.set_xlabel('time (min)')
-        ax.set_ylabel('cost')
+        ax.set_ylabel('coincidence counts (1/s)')
         ax.legend()
         fig.show()
 
     def plot_amplitudes(self, amps):
-        fig = plt.figure(figsize = (10,5))
-        ax = fig.add_subplot(1,1,1)
+        fig = plt.figure(figsize=(10, 5))
+        ax = fig.add_subplot(1, 1, 1)
         ax.set_ylim(0, 1)
         plt.xlabel("piezo_num")
         plt.ylabel("amplitude")
 
         ax.bar(range(len(self.good_piezo_indexes)), amps)  # , color = palette)
         fig.show()
-
 
     def animate_amplitudes(self):
         fig = plt.figure(figsize = (10,5))
@@ -101,7 +103,6 @@ class PianoPSOOptimizationResult(object):
             ax.set_ylabel("amplitude")
 
             ax.bar(range(len(self.good_piezo_indexes)), self.amplitudes[i])  # , color = palette)
-
 
         animation = Player(fig, animation_function, interval = 500, frames=len(self.amplitudes))
         plt.show()
@@ -169,6 +170,8 @@ class PianoPSOOptimizationResult(object):
         self.timestamps = data['timestamps']
         self.random_average_cost = data.get('random_average_cost', None)
         self.n_for_average_cost = data.get('n_for_average_cost', 20)  # before the parameter was introduced it was always 20
+        if self.n_for_average_cost != 20:
+            self.n_for_average_cost = self.n_for_average_cost.item()
         if self.random_average_cost:
             self.random_average_cost = self.random_average_cost.item()
 
