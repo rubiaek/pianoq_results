@@ -11,12 +11,15 @@ LOGS_DIR = "C:\\temp"
 
 
 class ScanResult(object):
-    def __init__(self, path=None, coincidences=None, single1s=None, single2s=None, X=None, Y=None,
-                 integration_time=None, coin_window=None, is_timetagger=None):
+    def __init__(self, path=None, coincidences=None, coincidences2=None, single1s=None, single2s=None, single3s=None, X=None, Y=None,
+                 is_double_spot=False, integration_time=None, coin_window=None, is_timetagger=None):
         self.path = path
         self.coincidences = coincidences
+        self.coincidences2 = coincidences2
         self.single1s = single1s
         self.single2s = single2s
+        self.single3s = single3s
+        self.is_double_spot = is_double_spot
         self.accidentals = None
         self.X = X
         self.Y = Y
@@ -79,8 +82,11 @@ class ScanResult(object):
             f = open(path, 'wb')
             np.savez(f,
                      coincidences=self.coincidences,
+                     coincidences2=self.coincidences2,
                      single1s=self.single1s,
                      single2s=self.single2s,
+                     single3s=self.single3s,
+                     is_double_spot=self.is_double_spot,
                      X=self.X,
                      Y=self.Y,
                      integration_time=self.integration_time,
@@ -110,8 +116,11 @@ class ScanResult(object):
         f = open(path, 'rb')
         data = np.load(f, allow_pickle=True)
         self.coincidences = data['coincidences']
+        self.coincidences2 = data.get('coincidences', None)
         self.single1s = data['single1s']
         self.single2s = data['single2s']
+        self.single3s = data.get('single3s', None)
+        self.is_double_spot = data.get('is_double_spot', False)
         self.X = data['X']
         self.Y = data['Y']
         self.integration_time = data.get('integration_time', None)
