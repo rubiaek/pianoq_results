@@ -10,12 +10,12 @@ from pianoq_results.misc import Player
 class PianoPSOOptimizationResult(object):
     def __init__(self):
         # Results of experiment
-        self.costs = np.array([])
+        self.costs = []
         self.costs_std = []
         self.amplitudes = []
         self.images = []
         self.exposure_times = []
-        self.timestamps = np.array([])
+        self.timestamps = []
 
         # Dac params
         self.good_piezo_indexes = None
@@ -163,7 +163,7 @@ class PianoPSOOptimizationResult(object):
         f = open(path, 'rb')
         data = np.load(f, allow_pickle=True)
         self.costs = data['costs']
-        self.costs_std = data.get('costs_std', [])
+        self.costs_std = data.get('costs_std', 0)
         self.amplitudes = data['amplitudes']
         self.images = data['images']
         self.exposure_times = data['exposure_times']
@@ -190,6 +190,6 @@ class PianoPSOOptimizationResult(object):
         self.reduce_at_iterations = data.get('reduce_at_iterations', None)
         self.cam_type = data.get('cam_type', None)
 
-        self.all_costs = data.get('all_costs', [])
+        self.all_costs = data.get('all_costs', np.array([0]))
         self.all_costs_std = data.get('all_costs_std', [])
         self.all_amplitudes = data.get('all_amplitudes', [])
