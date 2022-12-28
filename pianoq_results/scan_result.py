@@ -58,6 +58,18 @@ class ScanResult(object):
 
         return fig, ax
 
+    def show_good(self, title=''):
+        fig, axes = plt.subplots(1, 2, figsize=(10, 3.6))
+        axes[0].set_title(f'Single counts 2 {title}')
+        my_mesh(self.X, self.Y, self.single2s, axes[0])
+
+        axes[1].set_title(f'Coincidences {title} - no accidentals')
+        my_mesh(self.X, self.Y, self.coincidences - self.accidentals, axes[1])
+
+        axes[0].invert_xaxis()
+        axes[1].invert_xaxis()
+        fig.show()
+
     def show_both(self):
         self.show(show_singles=True, remove_accidentals=True)
         self.show(show_singles=False, remove_accidentals=False)
