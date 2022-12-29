@@ -11,7 +11,8 @@ ppo.loadfrom(path)
 if ppo.images[0] is not None:
     ppo.show_result()
 
-ppo.plot_costs()
+ppo.plot_costs(True)
+ppo.plot_costs(False)
 
 print(f'best cost: {ppo.costs[-1]}')
 e = ppo.enhancement

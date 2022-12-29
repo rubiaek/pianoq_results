@@ -66,14 +66,21 @@ class PianoPSOOptimizationResult(object):
 
         fig.show()
 
-    def plot_costs(self):
+    def plot_costs(self, all=False):
         fig, ax = plt.subplots()
-        ax.errorbar(self.timestamps / 60, -self.costs, self.costs_std, fmt='o--', label='measurements', markersize=4)
+        if not all:
+            ax.errorbar(self.timestamps / 60, -self.costs, self.costs_std, fmt='o--', label='measurements', markersize=4)
+        else:
+            ax.errorbar(np.arange(len(self.all_costs)), -self.all_costs, self.all_costs_std, fmt='o--', label='measurements',
+                        markersize=4)
         random_average_std = self.all_costs[:self.n_for_average_cost].std()
         ax.axhline(-self.random_average_cost, label='random average cost', color='g', linestyle='--')
         ax.axhspan(-self.random_average_cost - random_average_std, -self.random_average_cost + random_average_std,
                    alpha=0.4, color='g')
-        ax.set_xlabel('time (min)')
+        if not all:
+            ax.set_xlabel('time (min)')
+        else:
+            ax.set_xlabel('iteration')
         ax.set_ylabel('coincidence counts (1/s)')
         ax.legend()
         fig.show()

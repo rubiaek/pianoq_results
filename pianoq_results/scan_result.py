@@ -61,6 +61,10 @@ class ScanResult(object):
 
         return fig, ax
 
+    @property
+    def real_coins(self):
+        return self.coincidences - self.accidentals
+
     def show_good(self, title=''):
         fig, axes = plt.subplots(1, 2, figsize=(10, 3.6))
         axes[0].set_title(f'Single counts 2 {title}')
