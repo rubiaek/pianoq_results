@@ -12,7 +12,6 @@ def show_optimization(dir_path):
 
     min_coin = min(speckle_scan.real_coins.min(), optimized_scan.real_coins.min())
     max_coin = optimized_scan.real_coins.max()
-    print(min_coin)
 
     max1 = speckle_scan.single2s.max()
     max2 = optimized_scan.single2s.max()
@@ -43,6 +42,8 @@ def show_optimization(dir_path):
     axes[1, 1].add_artist(scalebar)
     fig.colorbar(im3, ax=axes[1, 1])
 
+    print(f'speckles single1s mean: {speckle_scan.single1s.mean():.0f}, single2s mean: {speckle_scan.single2s.mean():.0f} total coin: {speckle_scan.real_coins.sum():.0f}')
+    print(f'optimized single1s mean: {optimized_scan.single1s.mean():.0f}, single2s mean: {optimized_scan.single2s.mean():.0f}, total coin: {optimized_scan.real_coins.sum():.0f}')
 
     fig.show()
 
@@ -93,6 +94,10 @@ def show_speckles(path1, path2, path3):
     axes[1, 2].add_artist(scalebar)
     fig.colorbar(im3, ax=axes[1, 2])
 
+    print(f'scan 1 single1s mean: {scan1.single1s.mean():.0f}, single2s mean: {scan1.single2s.mean():.0f} total coin: {scan1.real_coins.sum():.0f}')
+    print(f'scan 2 single1s mean: {scan2.single1s.mean():.0f}, single2s mean: {scan2.single2s.mean():.0f}, total coin: {scan2.real_coins.sum():.0f}')
+    print(f'scan 3 single1s mean: {scan3.single1s.mean():.0f}, single2s mean: {scan3.single2s.mean():.0f}, total coin: {scan3.real_coins.sum():.0f}')
+
     fig.show()
 
 
@@ -100,7 +105,9 @@ def show_speckles(path1, path2, path3):
 path_not_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\2022_12_27_15_52_37_for_optimization_integration_8s_all'
 path_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralded\2022_12_19_02_50_01_optimization_integration_5s_all_same'
 # show_optimization(path_heralded)
-# show_optimization(path_not_heralded)
+show_optimization(path_not_heralded)
+
+print()
 
 path1_not_heralded = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\Many speckles\2022_12_28_15_50_55_6_speckles.scan"
 path2_not_heralded = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\Many speckles\2022_12_28_15_50_55_4_speckles.scan"
