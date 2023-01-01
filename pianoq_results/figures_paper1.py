@@ -95,20 +95,20 @@ def show_speckles(path1, path2, path3):
 
 path_not_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\2022_12_27_15_52_37_for_optimization_integration_8s_all'
 path_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralded\2022_12_19_02_50_01_optimization_integration_5s_all_same'
-show_optimization(path_heralded)
-show_optimization(path_not_heralded)
+# show_optimization(path_heralded)
+# show_optimization(path_not_heralded)
 
 print()
 
 NOT_HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\Many speckles\2022_12_28_15_50_55_{num}_speckles.scan"
 
-show_speckles(NOT_HERALDED_PATH_FORMAT.format(num=6),
-              NOT_HERALDED_PATH_FORMAT.format(num=7),
-              NOT_HERALDED_PATH_FORMAT.format(num=5))
+# show_speckles(NOT_HERALDED_PATH_FORMAT.format(num=6),
+#               NOT_HERALDED_PATH_FORMAT.format(num=7),
+#               NOT_HERALDED_PATH_FORMAT.format(num=5))
 
 print()
 
-HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Results\temp\2023_01_01_11_36_57\2023_01_01_11_36_57_{num}_speckles.scan"
+HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralded\Many Speckles\2023_01_01_11_36_57_{num}_speckles.scan"
 show_speckles(HERALDED_PATH_FORMAT.format(num=1),
               HERALDED_PATH_FORMAT.format(num=3),
               HERALDED_PATH_FORMAT.format(num=5))
