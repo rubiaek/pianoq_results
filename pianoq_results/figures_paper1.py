@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from pianoq_results.scan_result import ScanResult
 from matplotlib_scalebar.scalebar import ScaleBar
 
+COLORMAP = 'viridis'
+
 
 def add_scalebar(ax):
     scalebar = ScaleBar(25, units='um', location='upper right', length_fraction=1 / 3, box_alpha=0, color='white')
@@ -25,19 +27,19 @@ def show_optimization(dir_path):
 
     fig, axes = plt.subplots(2, 2, figsize=(6, 5), constrained_layout=True)
 
-    im0 = axes[0, 0].imshow(speckle_scan.single2s, vmin=0, vmax=max_singles)
+    im0 = axes[0, 0].imshow(speckle_scan.single2s, vmin=0, vmax=max_singles, cmap=COLORMAP)
     add_scalebar(axes[0, 0])
     # fig.colorbar(im0, ax=axes[0, 0])
 
-    im1 = axes[1, 0].imshow(speckle_scan.real_coins, vmin=min_coin, vmax=max_coin)
+    im1 = axes[1, 0].imshow(speckle_scan.real_coins, vmin=min_coin, vmax=max_coin, cmap=COLORMAP)
     add_scalebar(axes[1, 0])
     # fig.colorbar(im1, ax=axes[1, 0])
 
-    im2 = axes[0, 1].imshow(optimized_scan.single2s, vmin=0, vmax=max_singles)
+    im2 = axes[0, 1].imshow(optimized_scan.single2s, vmin=0, vmax=max_singles, cmap=COLORMAP)
     add_scalebar(axes[0, 1])
     fig.colorbar(im2, ax=axes[0, 1])
 
-    im3 = axes[1, 1].imshow(optimized_scan.real_coins, vmin=min_coin, vmax=max_coin)
+    im3 = axes[1, 1].imshow(optimized_scan.real_coins, vmin=min_coin, vmax=max_coin, cmap=COLORMAP)
     add_scalebar(axes[1, 1])
     fig.colorbar(im3, ax=axes[1, 1])
 
@@ -57,28 +59,28 @@ def show_speckles(path1, path2, path3):
     min_coin = max(scan1.real_coins.min(), scan2.real_coins.min(), scan3.real_coins.min())
 
     fig, axes = plt.subplots(2, 3, figsize=(8.5, 5), constrained_layout=True)
-    im0 = axes[0, 0].imshow(scan1.single2s, vmin=0, vmax=max_singles)
+    im0 = axes[0, 0].imshow(scan1.single2s, vmin=0, vmax=max_singles, cmap=COLORMAP)
     add_scalebar(axes[0, 0])
     # fig.colorbar(im0, ax=axes[0, 0])
 
-    im1 = axes[1, 0].imshow(scan1.real_coins, vmin=min_coin, vmax=max_coin)
+    im1 = axes[1, 0].imshow(scan1.real_coins, vmin=min_coin, vmax=max_coin, cmap=COLORMAP)
     add_scalebar(axes[1, 0])
     # fig.colorbar(im1, ax=axes[1, 0])
 
-    im2 = axes[0, 1].imshow(scan2.single2s, vmin=0, vmax=max_singles)
+    im2 = axes[0, 1].imshow(scan2.single2s, vmin=0, vmax=max_singles, cmap=COLORMAP)
     add_scalebar(axes[0, 1])
     # fig.colorbar(im2, ax=axes[0, 1])
 
-    im3 = axes[1, 1].imshow(scan2.real_coins, vmin=min_coin, vmax=max_coin)
+    im3 = axes[1, 1].imshow(scan2.real_coins, vmin=min_coin, vmax=max_coin, cmap=COLORMAP)
     add_scalebar(axes[1, 1])
     # fig.colorbar(im3, ax=axes[1, 1])
 
-    im2 = axes[0, 2].imshow(scan3.single2s, vmin=0, vmax=max_singles)
+    im2 = axes[0, 2].imshow(scan3.single2s, vmin=0, vmax=max_singles, cmap=COLORMAP)
     add_scalebar(axes[0, 2])
     cbar = fig.colorbar(im2, ax=axes[0, 2])
     cbar.set_label('counts / sec')
 
-    im3 = axes[1, 2].imshow(scan3.real_coins, vmin=min_coin, vmax=max_coin)
+    im3 = axes[1, 2].imshow(scan3.real_coins, vmin=min_coin, vmax=max_coin, cmap=COLORMAP)
     add_scalebar(axes[1, 2])
     cbar = fig.colorbar(im3, ax=axes[1, 2])
     cbar.set_label('counts / sec')
@@ -98,7 +100,15 @@ show_optimization(path_not_heralded)
 
 print()
 
-path1_not_heralded = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\Many speckles\2022_12_28_15_50_55_6_speckles.scan"
-path2_not_heralded = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\Many speckles\2022_12_28_15_50_55_7_speckles.scan"
-path3_not_heralded = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\Many speckles\2022_12_28_15_50_55_5_speckles.scan"
-show_speckles(path1_not_heralded, path2_not_heralded, path3_not_heralded)
+NOT_HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\Many speckles\2022_12_28_15_50_55_{num}_speckles.scan"
+
+show_speckles(NOT_HERALDED_PATH_FORMAT.format(num=6),
+              NOT_HERALDED_PATH_FORMAT.format(num=7),
+              NOT_HERALDED_PATH_FORMAT.format(num=5))
+
+print()
+
+HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Results\temp\2023_01_01_11_36_57\2023_01_01_11_36_57_{num}_speckles.scan"
+show_speckles(HERALDED_PATH_FORMAT.format(num=1),
+              HERALDED_PATH_FORMAT.format(num=3),
+              HERALDED_PATH_FORMAT.format(num=5))
