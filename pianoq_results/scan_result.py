@@ -120,7 +120,7 @@ class ScanResult(object):
         f = open(path, 'rb')
         data = np.load(f, allow_pickle=True)
         self.coincidences = data['coincidences']
-        self.coincidences2 = data.get('coincidences', None)
+        self.coincidences2 = data.get('coincidences2', None)
         self.single1s = data['single1s']
         self.single2s = data['single2s']
         self.single3s = data.get('single3s', None)
