@@ -17,7 +17,10 @@ print(f'mean singles1s: {r.single1s.mean()}')
 print(f'first singles1s: {r.single1s[0, 0]}')
 print(f'mean singles2s: {r.single2s.mean()}')
 print(f'first singles2s: {r.single2s[0, 0]}')
-r.show_good()
+if not r.is_double_spot:
+    r.show_good()
+else:
+    r.show_good_double()
 # r.show(show_singles=True, remove_accidentals=True,  title=name)
 # r.show(show_singles=False, remove_accidentals=False,  title=name)
 plt.show()
