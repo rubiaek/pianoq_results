@@ -65,16 +65,40 @@ class ScanResult(object):
     def real_coins(self):
         return self.coincidences - self.accidentals
 
+    @property
+    def real_coins2(self):
+        return self.coincidences2 - self.accidentals2
+
     def show_good(self, title=''):
         fig, axes = plt.subplots(1, 2, figsize=(10, 3.6))
         axes[0].set_title(f'Single counts 2 {title}')
         my_mesh(self.X, self.Y, self.single2s, axes[0])
 
         axes[1].set_title(f'Coincidences {title} - no accidentals')
-        my_mesh(self.X, self.Y, self.coincidences - self.accidentals, axes[1])
+        my_mesh(self.X, self.Y, self.real_coins, axes[1])
 
         axes[0].invert_xaxis()
         axes[1].invert_xaxis()
+        fig.show()
+
+    def show_good_double(self, title=''):
+        fig, axes = plt.subplots(2, 2, figsize=(8.5, 6.5))
+        axes[0, 0].set_title(f'Single counts 2 {title}')
+        my_mesh(self.X, self.Y, self.single2s, axes[0, 0])
+
+        axes[0, 1].set_title(f'Coincidences {title} - no accidentals')
+        my_mesh(self.X, self.Y, self.real_coins, axes[0, 1])
+
+        axes[1, 0].set_title(f'Single counts 3 {title}')
+        my_mesh(self.X, self.Y, self.single3s, axes[1, 0])
+
+        axes[1, 1].set_title(f'Coincidences2 {title} - no accidentals')
+        my_mesh(self.X, self.Y, self.real_coins2, axes[1, 1])
+
+        axes[0, 0].invert_xaxis()
+        axes[0, 1].invert_xaxis()
+        axes[1, 0].invert_xaxis()
+        axes[1, 1].invert_xaxis()
         fig.show()
 
     def show_both(self):
@@ -120,11 +144,14 @@ class ScanResult(object):
         f = open(path, 'rb')
         data = np.load(f, allow_pickle=True)
         self.coincidences = data['coincidences']
-        self.coincidences2 = data.get('coincidences2', None)
+        self.coincidences2 = data.get('coincidences2', 0)
         self.single1s = data['single1s']
         self.single2s = data['single2s']
-        self.single3s = data.get('single3s', None)
+        self.single3s = data.get('single3s', 0)
         self.is_double_spot = data.get('is_double_spot', False)
+        if type(self.is_double_spot) is np.ndarray:
+            self.is_double_spot = self.is_double_spot.item()
+
         self.X = data['X']
         self.Y = data['Y']
         self.integration_time = data.get('integration_time', None)
@@ -132,6 +159,7 @@ class ScanResult(object):
         self.is_timetagger = data.get('is_timetagger', False)
 
         self.accidentals = self.single1s * self.single2s * 2 * self.coin_window
+        self.accidentals2 = self.single1s * self.single3s * 2 * self.coin_window
 
         f.close()
 
