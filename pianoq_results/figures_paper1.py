@@ -100,17 +100,46 @@ def show_speckles(path1, path2, path3, show_singles=False):
     print(f'scan 2 single1s mean: {scan2.single1s.mean():.0f}, single2s mean: {scan2.single2s.mean():.0f}, total coin: {scan2.real_coins.sum():.0f}')
     print(f'scan 3 single1s mean: {scan3.single1s.mean():.0f}, single2s mean: {scan3.single2s.mean():.0f}, total coin: {scan3.real_coins.sum():.0f}')
 
+    fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\speckles_from_heralded.svg', dpi=fig.dpi)
+    fig.show()
+
+
+def show_two_spots(path_heralded, path_not_heralded):
+    path = glob.glob(f'{path_heralded}\\*optimized.scan')[0]
+    h_scan = ScanResult(path)
+
+    path = glob.glob(f'{path_not_heralded}\\*optimized.scan')[0]
+    nh_scan = ScanResult(path)
+
+    fig, axes = plt.subplots(1, 2, figsize=(8, 3.5), constrained_layout=True)
+    h_ax, nh_ax = axes
+
+    im_h = h_ax.imshow(h_scan.real_coins2, cmap=COLORMAP)
+    add_scalebar(h_ax)
+    # cbar = fig.colorbar(im_h, ax=h_ax)
+    # cbar.set_label('counts / sec', size=18)
+    # cbar.ax.tick_params(labelsize=18)
+
+    im_nh = nh_ax.imshow(nh_scan.real_coins2, cmap=COLORMAP)
+    add_scalebar(nh_ax)
+    cbar = fig.colorbar(im_nh, ax=nh_ax)
+    cbar.set_label('counts / sec', size=18)
+    cbar.ax.tick_params(labelsize=18)
+
+    fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\two_spots.svg', dpi=fig.dpi)
     fig.show()
 
 
 
+############### optimization ###############
 path_not_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\2022_12_27_15_52_37_for_optimization_integration_8s_all'
 path_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralded\2022_12_19_02_50_01_optimization_integration_5s_all_same'
 # show_optimization(path_heralded)
-show_optimization(path_not_heralded)
+# show_optimization(path_not_heralded)
 
 print()
 
+############### speckles ###############
 NOT_HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\Many speckles\2022_12_28_15_50_55_{num}_speckles.scan"
 
 # show_speckles(NOT_HERALDED_PATH_FORMAT.format(num=6),
@@ -123,3 +152,8 @@ HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralde
 # show_speckles(HERALDED_PATH_FORMAT.format(num=1),
 #               HERALDED_PATH_FORMAT.format(num=3),
 #               HERALDED_PATH_FORMAT.format(num=5), show_singles=False)
+
+############### two spots ###############
+TWO_SPOTS_HEREALDED_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Two Spots\Heralded\2023_01_04_20_15_36_best_double_spot_2'
+TWO_SPOTS_NOT_HEREALDED_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Two Spots\Not Heralded\2023_01_08_11_51_22_double_spot_integration_2s_pretty_good'
+show_two_spots(TWO_SPOTS_HEREALDED_PATH, TWO_SPOTS_NOT_HEREALDED_PATH)
