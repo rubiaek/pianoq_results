@@ -11,7 +11,11 @@ def optimization(heralded=False):
     path_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralded\2022_12_19_02_50_01_optimization_integration_5s_all_same'
 
     # load data
-    dir_path = path_heralded if heralded else path_not_heralded
+    if not heralded:
+        dir_path = path_not_heralded
+    else:
+        dir_path = path_heralded
+
     path = glob.glob(f'{dir_path}\\*speckles.scan')[0]
     speckle_scan = ScanResult(path)
     path = glob.glob(f'{dir_path}\\*optimized.scan')[0]
@@ -36,6 +40,12 @@ def optimization(heralded=False):
     static_singles_before = speckle_scan.single1s.mean()
     static_singles_after = optimized_scan.single1s.mean()
     print(f'Static single counts enhancement: {static_singles_after / static_singles_before}')
+
+    # single counts enhancement
+    index = np.unravel_index(optimized_scan.real_coins.argmax(), optimized_scan.real_coins.shape)
+    singles_before = speckle_scan.single2s[index]
+    singles_after = optimized_scan.single2s[index]
+    print(f'Single counts scanning detctor enhancement: {singles_after / singles_before:.1f}')
 
     # Loss enhancement
     if not heralded:
@@ -70,14 +80,21 @@ def optimization(heralded=False):
     img_H_before = img_before[180:, :]
     mimshow(img_V_before, 'V before')
     mimshow(img_H_before, 'H before')
+    V_H_ratio_before = img_V_before.sum() / img_H_before.sum()
 
     img_V_after = img_after[:180, :]
     img_H_after = img_after[180:, :]
     mimshow(img_V_after, 'V after')
     mimshow(img_H_after, 'H after')
+    V_H_ratio_after = img_V_after.sum() / img_H_after.sum()
 
     img_V_after2 = img_after2[:180, :]
     img_H_after2 = img_after2[180:, :]
+    V_H_ratio_after2 = img_V_after2.sum() / img_H_after2.sum()
+
+    print(f'V/H ratio before: {V_H_ratio_before}')
+    print(f'V/H ratio after: {V_H_ratio_after}')
+    # print(f'V/H ratio after2: {V_H_ratio_after2}')
 
 
 ## two spots ##
@@ -100,12 +117,6 @@ if __name__ == "__main__":
 
 """
 TODO list: 
-V enhancement optimization  
 Schmidt  
 enhancement two spots 
-
-polarization enhancement 
-V static single counts enhancement 
-V normalized enhancement by total coincidences 
-V loss enhancement 
 """
