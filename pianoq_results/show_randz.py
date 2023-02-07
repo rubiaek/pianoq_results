@@ -12,6 +12,6 @@ c2 = data['coin2s']
 real_c1 = c1 - 2*s1*s2*1e-9
 real_c2 = c2 - 2*s1*s3*1e-9
 
-print(f'real c1: {real_c1.mean()}+-{real_c1.std()}')
-print(f'real c2: {real_c2.mean()}+-{real_c2.std()}')
+print(f'real c1: {real_c1.mean()}+-{c1.std() / np.sqrt(len(real_c1))}')
+print(f'real c2: {real_c2.mean()}+-{c2.std() / np.sqrt(len(real_c2))}')
 input()
