@@ -119,36 +119,23 @@ def show_two_spots(path_heralded, path_not_heralded, add_circles=True):
     fig, axes = plt.subplots(1, 2, figsize=(8, 3.5), constrained_layout=True)
     h_ax, nh_ax = axes
 
-    # Heralded
+    def _two_spots(scan, json, ax, add_circles):
+        add_scalebar(ax)
+        circ1 = plt.Circle(json['optimized_xy'], 0.0625, color='b', fill=False)
+
+        other_y = json['optimized_xy'][1] - scan.displacement_between_coins[0]
+        other_x = json['optimized_xy'][0] + scan.displacement_between_coins[1]
+        circ2 = plt.Circle((other_x, other_y), 0.0625, color='r', fill=False)
+
+        if add_circles:
+            ax.add_patch(circ1)
+            ax.add_patch(circ2)
+
+    _two_spots(h_scan, h_json, h_ax, add_circles)
+    _two_spots(nh_scan, nh_json, nh_ax, add_circles)
+
     im_h = h_ax.imshow(h_scan.real_coins2, cmap=COLORMAP, extent=h_scan.extent)
-    add_scalebar(h_ax)
-    h_circ1 = plt.Circle(h_json['optimized_xy'], 0.0625, color='b', fill=False)
-
-    other_y = h_json['optimized_xy'][1] - h_scan.displacement_between_coins[0]
-    other_x = h_json['optimized_xy'][0] + h_scan.displacement_between_coins[1]
-    h_circ2 = plt.Circle((other_x, other_y), 0.0625, color='r', fill=False)
-
-    if add_circles:
-        h_ax.add_patch(h_circ1)
-        h_ax.add_patch(h_circ2)
-
-    # cbar = fig.colorbar(im_h, ax=h_ax)
-    # cbar.set_label('counts / sec', size=18)
-    # cbar.ax.tick_params(labelsize=18)
-
-    # Not Heralded
     im_nh = nh_ax.imshow(nh_scan.real_coins2, cmap=COLORMAP, extent=nh_scan.extent)
-    add_scalebar(nh_ax)
-    nh_circ1 = plt.Circle(nh_json['optimized_xy'], 0.0625, color='b', fill=False)
-
-    other_y = nh_json['optimized_xy'][1] - nh_scan.displacement_between_coins[0]
-    other_x = nh_json['optimized_xy'][0] + nh_scan.displacement_between_coins[1]
-    nh_circ2 = plt.Circle((other_x, other_y), 0.0625, color='r', fill=False)
-
-    if add_circles:
-        nh_ax.add_patch(nh_circ1)
-        nh_ax.add_patch(nh_circ2)
-
     cbar = fig.colorbar(im_nh, ax=nh_ax)
     cbar.set_label('counts / sec', size=18)
     cbar.ax.tick_params(labelsize=18)
