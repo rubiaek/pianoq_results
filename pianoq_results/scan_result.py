@@ -112,6 +112,13 @@ class ScanResult(object):
         displacement_mm = displacement_pixels[0] * dy, displacement_pixels[1] * dx
         return displacement_mm
 
+    @property
+    def extent(self):
+        dx = (self.X[1] - self.X[0]) / 2
+        dy = (self.Y[1] - self.Y[0]) / 2
+        extent = (self.X[0] - dx, self.X[-1] + dx, self.Y[0] - dy, self.Y[-1] + dy)
+        return extent
+
     def show_both(self):
         self.show(show_singles=True, remove_accidentals=True)
         self.show(show_singles=False, remove_accidentals=False)

@@ -120,18 +120,12 @@ def show_two_spots(path_heralded, path_not_heralded, add_circles=True):
     h_ax, nh_ax = axes
 
     # Heralded
-    dx = (h_scan.X[1] - h_scan.X[0]) / 2
-    dy = (h_scan.Y[1] - h_scan.Y[0]) / 2
-    extent = (h_scan.X[0] - dx, h_scan.X[-1] + dx, h_scan.Y[0] - dy, h_scan.Y[-1] + dy)
-
-    im_h = h_ax.imshow(h_scan.real_coins2, cmap=COLORMAP, extent=extent)
+    im_h = h_ax.imshow(h_scan.real_coins2, cmap=COLORMAP, extent=h_scan.extent)
     add_scalebar(h_ax)
     h_circ1 = plt.Circle(h_json['optimized_xy'], 0.0625, color='b', fill=False)
 
     other_y = h_json['optimized_xy'][1] - h_scan.displacement_between_coins[0]
     other_x = h_json['optimized_xy'][0] + h_scan.displacement_between_coins[1]
-    print(other_x)
-    print(other_y)
     h_circ2 = plt.Circle((other_x, other_y), 0.0625, color='r', fill=False)
 
     if add_circles:
@@ -143,18 +137,12 @@ def show_two_spots(path_heralded, path_not_heralded, add_circles=True):
     # cbar.ax.tick_params(labelsize=18)
 
     # Not Heralded
-    dx = (nh_scan.X[1] - nh_scan.X[0]) / 2
-    dy = (nh_scan.Y[1] - nh_scan.Y[0]) / 2
-    extent = (nh_scan.X[0] - dx, nh_scan.X[-1] + dx, nh_scan.Y[0] - dy, nh_scan.Y[-1] + dy)
-
-    im_nh = nh_ax.imshow(nh_scan.real_coins2, cmap=COLORMAP, extent=extent)
+    im_nh = nh_ax.imshow(nh_scan.real_coins2, cmap=COLORMAP, extent=nh_scan.extent)
     add_scalebar(nh_ax)
     nh_circ1 = plt.Circle(nh_json['optimized_xy'], 0.0625, color='b', fill=False)
 
     other_y = nh_json['optimized_xy'][1] - nh_scan.displacement_between_coins[0]
     other_x = nh_json['optimized_xy'][0] + nh_scan.displacement_between_coins[1]
-    print(other_x)
-    print(other_y)
     nh_circ2 = plt.Circle((other_x, other_y), 0.0625, color='r', fill=False)
 
     if add_circles:
