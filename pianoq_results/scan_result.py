@@ -96,10 +96,10 @@ class ScanResult(object):
         axes[1, 1].set_title(f'Coincidences2 {title} - no accidentals')
         my_mesh(self.X, self.Y, self.real_coins2, axes[1, 1])
 
-        axes[0, 0].invert_xaxis()
-        axes[0, 1].invert_xaxis()
-        axes[1, 0].invert_xaxis()
-        axes[1, 1].invert_xaxis()
+        # axes[0, 0].invert_xaxis()
+        # axes[0, 1].invert_xaxis()
+        # axes[1, 0].invert_xaxis()
+        # axes[1, 1].invert_xaxis()
         fig.show()
 
     @property
