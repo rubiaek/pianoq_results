@@ -1,4 +1,5 @@
 import glob
+import json
 import matplotlib.pyplot as plt
 from pianoq_results.scan_result import ScanResult
 from matplotlib_scalebar.scalebar import ScaleBar
@@ -104,31 +105,68 @@ def show_speckles(path1, path2, path3, show_singles=False):
     fig.show()
 
 
-def show_two_spots(path_heralded, path_not_heralded):
+def show_two_spots(path_heralded, path_not_heralded, add_circles=True):
     path = glob.glob(f'{path_heralded}\\*optimized.scan')[0]
     h_scan = ScanResult(path)
+    path = glob.glob(f'{path_heralded}\\*config.json')[0]
+    h_json = json.loads(open(path).read())
 
     path = glob.glob(f'{path_not_heralded}\\*optimized.scan')[0]
     nh_scan = ScanResult(path)
+    path = glob.glob(f'{path_not_heralded}\\*config.json')[0]
+    nh_json = json.loads(open(path).read())
 
     fig, axes = plt.subplots(1, 2, figsize=(8, 3.5), constrained_layout=True)
     h_ax, nh_ax = axes
 
-    im_h = h_ax.imshow(h_scan.real_coins2, cmap=COLORMAP)
+    # Heralded
+    dx = (h_scan.X[1] - h_scan.X[0]) / 2
+    dy = (h_scan.Y[1] - h_scan.Y[0]) / 2
+    extent = (h_scan.X[0] - dx, h_scan.X[-1] + dx, h_scan.Y[0] - dy, h_scan.Y[-1] + dy)
+
+    im_h = h_ax.imshow(h_scan.real_coins2, cmap=COLORMAP, extent=extent)
     add_scalebar(h_ax)
+    h_circ1 = plt.Circle(h_json['optimized_xy'], 0.0625, color='b', fill=False)
+
+    other_y = h_json['optimized_xy'][1] - h_scan.displacement_between_coins[0]
+    other_x = h_json['optimized_xy'][0] + h_scan.displacement_between_coins[1]
+    print(other_x)
+    print(other_y)
+    h_circ2 = plt.Circle((other_x, other_y), 0.0625, color='r', fill=False)
+
+    if add_circles:
+        h_ax.add_patch(h_circ1)
+        h_ax.add_patch(h_circ2)
+
     # cbar = fig.colorbar(im_h, ax=h_ax)
     # cbar.set_label('counts / sec', size=18)
     # cbar.ax.tick_params(labelsize=18)
 
-    im_nh = nh_ax.imshow(nh_scan.real_coins2, cmap=COLORMAP)
+    # Not Heralded
+    dx = (nh_scan.X[1] - nh_scan.X[0]) / 2
+    dy = (nh_scan.Y[1] - nh_scan.Y[0]) / 2
+    extent = (nh_scan.X[0] - dx, nh_scan.X[-1] + dx, nh_scan.Y[0] - dy, nh_scan.Y[-1] + dy)
+
+    im_nh = nh_ax.imshow(nh_scan.real_coins2, cmap=COLORMAP, extent=extent)
     add_scalebar(nh_ax)
+    nh_circ1 = plt.Circle(nh_json['optimized_xy'], 0.0625, color='b', fill=False)
+
+    other_y = nh_json['optimized_xy'][1] - nh_scan.displacement_between_coins[0]
+    other_x = nh_json['optimized_xy'][0] + nh_scan.displacement_between_coins[1]
+    print(other_x)
+    print(other_y)
+    nh_circ2 = plt.Circle((other_x, other_y), 0.0625, color='r', fill=False)
+
+    if add_circles:
+        nh_ax.add_patch(nh_circ1)
+        nh_ax.add_patch(nh_circ2)
+
     cbar = fig.colorbar(im_nh, ax=nh_ax)
     cbar.set_label('counts / sec', size=18)
     cbar.ax.tick_params(labelsize=18)
 
     fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\two_spots.svg', dpi=fig.dpi)
     fig.show()
-
 
 
 ############### optimization ###############
