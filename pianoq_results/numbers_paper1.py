@@ -1,10 +1,15 @@
+import json
 import glob
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
+
+from pianoq.misc.mplt import mimshow
 from pianoq_results.scan_result import ScanResult
 from pianoq_results.piano_optimization_result import PianoPSOOptimizationResult
 
+def mimshow(*args, **kwargs):
+    pass
 
 def optimization(heralded=False):
     path_not_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\2022_12_27_15_52_37_for_optimization_integration_8s_all'
@@ -39,7 +44,7 @@ def optimization(heralded=False):
     # static single counts enhancement
     static_singles_before = speckle_scan.single1s.mean()
     static_singles_after = optimized_scan.single1s.mean()
-    print(f'Static single counts enhancement: {static_singles_after / static_singles_before}')
+    print(f'Static single counts enhancement: {static_singles_after / static_singles_before:.1f}')
 
     # single counts enhancement
     index = np.unravel_index(optimized_scan.real_coins.argmax(), optimized_scan.real_coins.shape)
@@ -57,14 +62,14 @@ def optimization(heralded=False):
     dark = f.data[:100, :100].mean()
     img_before = f.data[mask] - dark
     tot_power_before = img_before.sum()
-    mimshow(img, f'before, heralded={heralded}')
+    mimshow(img_before, f'before, heralded={heralded}')
 
     path = glob.glob(f'{dir_path}\\*_singles_after_optimization.fits')[0]
     f = fits.open(path)[0]
     dark = f.data[:100, :100].mean()
     img_after = f.data[mask] - dark
     tot_power_after = img_after.sum()
-    mimshow(img, f'after, heralded={heralded}')
+    mimshow(img_after, f'after, heralded={heralded}')
 
     path = glob.glob(f'{dir_path}\\*_singles_after_scan.fits')[0]
     f = fits.open(path)[0]
@@ -92,31 +97,92 @@ def optimization(heralded=False):
     img_H_after2 = img_after2[180:, :]
     V_H_ratio_after2 = img_V_after2.sum() / img_H_after2.sum()
 
-    print(f'V/H ratio before: {V_H_ratio_before}')
-    print(f'V/H ratio after: {V_H_ratio_after}')
+    print(f'V/H ratio before: {V_H_ratio_before:.1f}')
+    print(f'V/H ratio after: {V_H_ratio_after:.1f}')
     # print(f'V/H ratio after2: {V_H_ratio_after2}')
 
 
 ## two spots ##
-def two_spots():
+def two_spots(heralded):
     two_spots_herealded_path = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Two Spots\Heralded\2023_01_04_20_15_36_best_double_spot_2'
     two_spots_not_herealded_path = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Two Spots\Not Heralded\2023_01_08_11_51_22_double_spot_integration_2s_pretty_good'
+
+    # load data
+    if not heralded:
+        dir_path = two_spots_not_herealded_path
+    else:
+        dir_path = two_spots_herealded_path
+
+    path = glob.glob(f'{dir_path}\\*optimized.scan')[0]
+    scan = ScanResult(path)
+    path = glob.glob(f'{dir_path}\\*config.json')[0]
+    jjson = json.loads(open(path).read())
+    path = glob.glob(f'{dir_path}\\*.randz')[0]
+    randz_data = np.load(path)
+
+    # Before
+    s1 = randz_data['single1s']
+    s2 = randz_data['single2s']
+    s3 = randz_data['single3s']
+    c1 = randz_data['coin1s']
+    c2 = randz_data['coin2s']
+
+    real_c1 = c1 - 2 * s1 * s2 * 1e-9
+    real_c2 = c2 - 2 * s1 * s3 * 1e-9
+    mean_before1 = real_c1.mean()  # lower spot
+    mean_before2 = real_c2.mean()  # upper spot
+    print(f'mean c1 before: {mean_before1:.1f}+-{c1.std() / np.sqrt(len(real_c1)):.1f}')
+    print(f'mean c2 before: {mean_before2:.1f}+-{c2.std() / np.sqrt(len(real_c2)):.1f}')
+
+    col, row = jjson['optimized_xy']
+    col = np.where(scan.X == col)[0][0]
+    row = np.where(scan.Y[::-1] == row)[0][0]
+
+    # lower spot
+    col2 = col + 2
+    row2 = row + 7
+
+    after1_opt1 = scan.real_coins2[row2, col2]  # lower spot
+    after2_opt1 = scan.real_coins2[row, col]
+    print(f'after1_opt1: {after1_opt1:.1f}')
+    print(f'after2_opt1: {after2_opt1:.1f}')
+
+    after1_opt2 = scan.real_coins2[row2-2:row2+3, col2-2:col2+3].max()  # lower spot
+    after2_opt2 = scan.real_coins2[row-2:row+3, col-2:col+3].max()
+    print(f'after1_opt2: {after1_opt2:.1f}')
+    print(f'after2_opt2: {after2_opt2:.1f}')
+
+    print('Option 1 - in place of X')
+    print(f'enhancement lower spot: {after1_opt1 / mean_before1:.1f}')
+    print(f'enhancement upper spot: {after2_opt1 / mean_before2:.1f}')
+    print('Option 2 - maximum close to X')
+    print(f'enhancement lower spot: {after1_opt2 / mean_before1:.1f}')
+    print(f'enhancement upper spot: {after2_opt2 / mean_before2:.1f}')
+
 
 def schmidt():
     pass
 
 
 if __name__ == "__main__":
+    print("######################")
     print("##### one photon #####")
+    print("######################")
     optimization(True)
-    print()
+    print('\n## double spot ##')
+    two_spots(True)
 
-    print("##### two photons #####")
+    print()
+    print("######################")
+    print("##### two photons ####")
+    print("######################")
     optimization(False)
+    print('\n## double spot ##')
+    two_spots(False)
 
 
 """
 TODO list: 
-Schmidt  
-enhancement two spots 
+- all enhancements with uncertainty from shot noise   
+- Schmidt number 
 """
