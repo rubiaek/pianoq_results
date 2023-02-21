@@ -8,8 +8,8 @@ from pianoq.misc.mplt import mimshow
 from pianoq_results.scan_result import ScanResult
 from pianoq_results.piano_optimization_result import PianoPSOOptimizationResult
 
-def mimshow(*args, **kwargs):
-    pass
+# def mimshow(*args, **kwargs):
+#     pass
 
 def optimization(heralded=False):
     path_not_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\2022_12_27_15_52_37_for_optimization_integration_8s_all'
@@ -164,7 +164,46 @@ def schmidt():
     pass
 
 
-if __name__ == "__main__":
+def loss():
+    dir_path = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\PressesLoss\Amps=%s.fits"
+
+    a0 = fits.open(dir_path % 0)[0]
+    a05 = fits.open(dir_path % 0.5)[0]
+    a1 = fits.open(dir_path % 1)[0]
+
+    sum0 = (a0.data - a0.data[:, 0].mean()).sum()
+    sum05 = (a05.data - a05.data[:, 0].mean()).sum()
+    sum1 = (a1.data - a1.data[:, 0].mean()).sum()
+
+    sum0 = sum0 / a0.header['expoinus']
+    sum05 = sum05 / a05.header['expoinus']
+    sum1 = sum1 / a1.header['expoinus']
+
+    print(f'sum0   : {sum0:.0f}')
+    print(f'sum05  : {sum05:.0f}')
+    print(f'sum1   : {sum1:.0f}')
+
+    ################################
+    dir_path = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\SinglesWithAndWithoutPiano'
+    path_in_piano = glob.glob(f'{dir_path}\\*inside_piano.fit')[0]
+    path_out_piano = glob.glob(f'{dir_path}\\*outside_piano.fit')[0]
+
+    f_out = fits.open(path_out_piano)[0]
+    data_out = f_out.data[800:1300, 1550:1850]
+    data_out = data_out - data_out[:, 0].mean()
+
+    f_in = fits.open(path_in_piano)[0]
+    data_in = f_in.data[800:1300, 1550:1850]
+    data_in = data_in - data_in[:, 0].mean()
+
+    sum_in = data_in.sum() / (f_in.header['expoinus']*1e-6)
+    sum_out = data_out.sum() / (f_out.header['expoinus']*1e-6)
+
+    print(f'sum_in : {sum_in:.0f}')
+    print(f'sum_out: {sum_out:.0f}')
+
+
+def main_article_numbers():
     print("######################")
     print("##### one photon #####")
     print("######################")
@@ -181,8 +220,13 @@ if __name__ == "__main__":
     two_spots(False)
 
 
+if __name__ == "__main__":
+    loss()
+
 """
 TODO list: 
 - all enhancements with uncertainty from shot noise   
 - Schmidt number 
+- Mode count in fiber
+- Spectral correlation width  
 """
