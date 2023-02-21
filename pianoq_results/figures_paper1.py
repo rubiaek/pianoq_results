@@ -3,6 +3,7 @@ import json
 import matplotlib.pyplot as plt
 from pianoq_results.scan_result import ScanResult
 from matplotlib_scalebar.scalebar import ScaleBar
+from astropy.io import fits
 
 COLORMAP = 'viridis'
 X_MARKER_COLOR = '#929591'
@@ -186,11 +187,59 @@ def show_two_spots(path_heralded, path_not_heralded, add_circles=False):
     fig.show()
 
 
+def show_high_order_loss(dir_path):
+    path_in_piano = glob.glob(f'{dir_path}\\*inside_piano.fit')[0]
+    path_out_piano = glob.glob(f'{dir_path}\\*outside_piano.fit')[0]
+
+    f_out = fits.open(path_out_piano)[0]
+    data_out = f_out.data[800:1300, 1550:1850]
+    data_out = data_out - data_out.min()
+
+    f_in = fits.open(path_in_piano)[0]
+    data_in = f_in.data[800:1300, 1550:1850]
+    data_in = data_in - data_in.min()
+
+    # extent = (self.X[0] - dx, self.X[-1] + dx, self.Y[0] - dy, self.Y[-1] + dy)
+
+    YY = 1e-3 * f_out.header['YPIXSZ'] * (1300-800) / 2
+    XX = 1e-3 * f_out.header['XPIXSZ'] * (1850-1550) / 2
+    extent = (-XX, XX, -YY, YY)
+
+    fig, axes = plt.subplots(1, 2, figsize=(10.5, 6))
+    im_out = axes[0].imshow(data_out, vmin=0, extent=extent)
+    im_in = axes[1].imshow(data_in, vmin=0, extent=extent)
+    axes[0].set_xlabel('x (mm)')
+    axes[0].set_ylabel('y (mm)')
+    axes[1].set_xlabel('x (mm)')
+    axes[1].set_ylabel('y (mm)')
+
+    fig.colorbar(im_out, ax=axes[0])
+    fig.colorbar(im_in, ax=axes[1])
+    fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\high_order_loss.svg', dpi=fig.dpi)
+    fig.show()
+
+
+def show_singles_not_enough(path):
+    sr = ScanResult()
+    sr.loadfrom(path)
+
+    fig, axes = plt.subplots(1, 2, figsize=(9, 3.5), constrained_layout=True)
+    im0 = axes[0].imshow(sr.single2s, cmap=COLORMAP, extent=sr.extent)
+    add_scalebar(axes[0])
+    cbar = fig.colorbar(im0, ax=axes[0])
+
+    im1 = axes[1].imshow(sr.real_coins, cmap=COLORMAP, extent=sr.extent)
+    add_scalebar(axes[1])
+    cbar = fig.colorbar(im1, ax=axes[1])
+
+    fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\singles_not_enough.svg', dpi=fig.dpi)
+    fig.show()
+
 ############### optimization ###############
 path_not_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\2022_12_27_15_52_37_for_optimization_integration_8s_all'
 path_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralded\2022_12_19_02_50_01_optimization_integration_5s_all_same'
-show_optimization(path_heralded, 'heralded')
-show_optimization(path_not_heralded, 'not_heralded')
+# show_optimization(path_heralded, 'heralded')
+# show_optimization(path_not_heralded, 'not_heralded')
 
 print()
 
@@ -212,3 +261,9 @@ HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralde
 TWO_SPOTS_HEREALDED_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Two Spots\Heralded\2023_01_04_20_15_36_best_double_spot_2'
 TWO_SPOTS_NOT_HEREALDED_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Two Spots\Not Heralded\2023_01_08_11_51_22_double_spot_integration_2s_pretty_good'
 # show_two_spots(TWO_SPOTS_HEREALDED_PATH, TWO_SPOTS_NOT_HEREALDED_PATH)
+
+HIGH_ORDDER_LOSS_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\SinglesWithAndWithoutPiano'
+show_high_order_loss(HIGH_ORDDER_LOSS_PATH)
+
+SINGLES_NOT_ENOUGH_PATH = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\SinglesDontOptimizeCoin\2023_02_06_02_55_33_coin_not_optimized_no_spot_use_this\2023_02_06_02_55_33_optimized.scan"
+show_singles_not_enough(SINGLES_NOT_ENOUGH_PATH)
