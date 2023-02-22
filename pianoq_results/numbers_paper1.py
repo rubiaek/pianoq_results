@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from astropy.io import fits
 
 from pianoq.misc.mplt import mimshow
+from pianoq.lab.scripts.two_speckle_statistics import SpeckleStatisticsResult
 from pianoq_results.scan_result import ScanResult
 from pianoq_results.piano_optimization_result import PianoPSOOptimizationResult
 
@@ -160,7 +161,39 @@ def two_spots(heralded):
     print(f'enhancement upper spot: {after2_opt2 / mean_before2:.1f}')
 
 
-def schmidt():
+def schmidt_before():
+    # but this might not be correct
+    Lambda = 404e-9
+    n_ppktp = 1.82
+    L = 4e-3
+    k = 2*np.pi*n_ppktp / Lambda
+    b = np.sqrt(L/(4*k))
+    sigma = 1/(46*3.76e-6*200/300)
+    K = 0.25*(b*sigma + 1/(b*sigma))
+    print(f'Schmidt number from crystal and waist: {K}')
+
+
+def schmidt_after():
+    ss = SpeckleStatisticsResult()
+    ss.loadfrom(r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralded\2023_01_01_20_06_20_speckle_statistics_filter=3nm_heralded_integration_5s.spst")
+    cc, cdc = ss._get_contrast(ss.real_coin)
+    s2c, s2dc = ss._get_contrast(ss.single2s)
+
+    from uncertainties import ufloat
+    cc = ufloat(cc, cdc)
+    s2c = ufloat(s2c, s2dc)
+
+    Nc = 1/cc**2
+    Ns2 = 1/s2c**2
+
+    print(f'Contrast for coincidence: {cc} ~ {Nc} speckle patterns')
+    print(f'Contrast for single2s: {s2c} ~ {Ns2} speckle patterns')
+
+    schmidt_number = Ns2 / Nc
+    print(f"Schmidt number: {schmidt_number}")
+
+
+def fiber_modes():
     pass
 
 
@@ -226,7 +259,6 @@ if __name__ == "__main__":
 """
 TODO list: 
 - all enhancements with uncertainty from shot noise   
-- Schmidt number 
 - Mode count in fiber
 - Spectral correlation width  
 """
