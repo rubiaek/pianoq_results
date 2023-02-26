@@ -49,7 +49,7 @@ def show_optimization(dir_path, h_type):
     cbar = fig.colorbar(im2, ax=axes[0, 1])
     cbar.ax.locator_params(nbins=4)
     cbar.formatter.set_powerlimits((0, 0))
-    cbar.set_label('Photons/s', size=18)
+    # cbar.set_label('Photons/s', size=18)
     cbar.ax.tick_params(labelsize=18)
 
 
@@ -59,7 +59,7 @@ def show_optimization(dir_path, h_type):
     cbar = fig.colorbar(im3, ax=axes[1, 1])  # , ticks=[0, max_coin])
     cbar.ax.locator_params(nbins=4)
     cbar.formatter.set_powerlimits((0, 0))
-    cbar.set_label('Pairs/s', size=18)
+    # cbar.set_label('Pairs/s', size=18)
     cbar.ax.tick_params(labelsize=18)
 
 
