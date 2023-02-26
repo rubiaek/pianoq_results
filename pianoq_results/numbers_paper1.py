@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
 from scipy import signal
+from uncertainties import ufloat
 
 from pianoq.misc.mplt import mimshow
 from pianoq.lab.scripts.two_speckle_statistics import SpeckleStatisticsResult
@@ -32,10 +33,18 @@ def optimization(heralded=False):
     optimization_res.loadfrom(path)
 
     # total optimization enhancement
-    mean_cost_before = np.abs(optimization_res.all_costs[:optimization_res.n_for_average_cost].mean())
+    ensemble = optimization_res.all_costs[:optimization_res.n_for_average_cost]
+    N = optimization_res.n_for_average_cost
+    mean = np.abs(ensemble.mean())
+    err = ensemble.std() / np.sqrt(N)
+    mean_cost_before = ufloat(mean, err)
+
     best_cost_optimization = np.abs(optimization_res.all_costs.min())
     # print(f'Total Enhancement from pqoptimizer: {best_cost_optimization / mean_cost_before:.1f}')
     best_cost_from_scan = optimized_scan.real_coins.max()
+    index = np.unravel_index(optimized_scan.real_coins.argmax(), optimized_scan.real_coins.shape)
+    err = np.sqrt(optimized_scan.coincidences[index] * optimized_scan.integration_time) / optimized_scan.integration_time
+    best_cost_from_scan = ufloat(best_cost_from_scan, err)
     print(f'Total Enhancement from scan: {best_cost_from_scan / mean_cost_before:.1f}')
 
     # normalized optimization enhancement
@@ -133,8 +142,10 @@ def two_spots(heralded):
     real_c2 = c2 - 2 * s1 * s3 * 1e-9
     mean_before1 = real_c1.mean()  # lower spot
     mean_before2 = real_c2.mean()  # upper spot
-    print(f'mean c1 before: {mean_before1:.1f}+-{c1.std() / np.sqrt(len(real_c1)):.1f}')
-    print(f'mean c2 before: {mean_before2:.1f}+-{c2.std() / np.sqrt(len(real_c2)):.1f}')
+    mean_before1 = ufloat(mean_before1, c1.std() / np.sqrt(len(real_c1)))
+    mean_before2 = ufloat(mean_before2, c2.std() / np.sqrt(len(real_c2)))
+    print(f'mean c1 before: {mean_before1:.1f}')
+    print(f'mean c2 before: {mean_before2:.1f}')
 
     col, row = jjson['optimized_xy']
     col = np.where(scan.X == col)[0][0]
@@ -146,11 +157,24 @@ def two_spots(heralded):
 
     after1_opt1 = scan.real_coins2[row2, col2]  # lower spot
     after2_opt1 = scan.real_coins2[row, col]
+
+    err = np.sqrt(scan.coincidences2[row2, col2] * scan.integration_time) / scan.integration_time
+    after1_opt1 = ufloat(after1_opt1, err)
+    err = np.sqrt(scan.coincidences2[row, col] * scan.integration_time) / scan.integration_time
+    after2_opt1 = ufloat(after2_opt1, err)
     print(f'after1_opt1: {after1_opt1:.1f}')
     print(f'after2_opt1: {after2_opt1:.1f}')
 
     after1_opt2 = scan.real_coins2[row2-2:row2+3, col2-2:col2+3].max()  # lower spot
+    index = np.unravel_index(scan.real_coins2[row2-2:row2+3, col2-2:col2+3].argmax(), scan.real_coins.shape)
+    err = np.sqrt(scan.coincidences2[index] * scan.integration_time) / scan.integration_time
+    after1_opt2 = ufloat(after1_opt2, err)
+
     after2_opt2 = scan.real_coins2[row-2:row+3, col-2:col+3].max()
+    index = np.unravel_index(scan.real_coins2[row-2:row+3, col-2:col+3].argmax(), scan.real_coins.shape)
+    err = np.sqrt(scan.coincidences2[index] * scan.integration_time) / scan.integration_time
+    after2_opt2 = ufloat(after2_opt2, err)
+
     print(f'after1_opt2: {after1_opt2:.1f}')
     print(f'after2_opt2: {after2_opt2:.1f}')
 
@@ -231,6 +255,23 @@ def spectral_correlation_width():
     mplot(X, final)  # FWHM -> spectral correlation width of 2.8nm
 
 
+def smf_enhancement():
+    path = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\SMF coupling\2023_02_06_10_07_13_couple_to_SMF\2023_02_06_10_07_13_2.pqoptimizer"
+    res = PianoPSOOptimizationResult()
+    res.loadfrom(path)
+
+    ensemble = res.all_costs[:res.n_for_average_cost]
+    N = res.n_for_average_cost
+    mean = np.abs(ensemble.mean())
+    err = ensemble.std() / np.sqrt(N)
+    mean_cost_before = ufloat(mean, err)
+
+    after = np.abs(res.costs[-1])
+    after_err = res.costs_std[-1]
+    cost_after = ufloat(after, after_err)
+    print(f'enhancement to SMF: {cost_after / mean_cost_before}')
+
+
 def loss():
     dir_path = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\PressesLoss\Amps=%s.fits"
 
@@ -290,8 +331,3 @@ def main_article_numbers():
 if __name__ == "__main__":
     loss()
 
-"""
-TODO list: 
-- all enhancements with uncertainty from shot noise   
-- Spectral correlation width  
-"""
