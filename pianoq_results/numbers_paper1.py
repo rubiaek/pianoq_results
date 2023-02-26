@@ -3,6 +3,7 @@ import glob
 import numpy as np
 import matplotlib.pyplot as plt
 from astropy.io import fits
+from scipy import signal
 
 from pianoq.misc.mplt import mimshow
 from pianoq.lab.scripts.two_speckle_statistics import SpeckleStatisticsResult
@@ -194,7 +195,40 @@ def schmidt_after():
 
 
 def fiber_modes():
-    pass
+    from uncertainties import ufloat
+    NA = ufloat(0.2, 0.015)
+    r_core = ufloat(50e-6, 2.5e-6) / 2
+    L = ufloat(808e-9, 3e-9)
+
+    V = (2*np.pi/L)*NA*r_core
+    N = (4/np.pi**2)*V**2
+    print(f"N modes is: {N:.2f}")
+
+
+def spectral_correlation_width():
+    from pyspectra.readers.read_spc import read_spc
+    from pianoq.misc.mplt import mplot
+    import glob
+    path = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\Different spectral speckles with SLD and spectrometer\*.spc'
+    files = glob.glob(path)
+    Xs = []
+    Ys = []
+    for f in files:
+        spc = read_spc(f)
+        Xs.append(np.array(spc.index)[2510:2810])
+        Ys.append(spc.values[2510:2810])
+
+    dx = Xs[0][1] - Xs[0][0]
+
+    mean_sig = np.mean(Ys, axis=0)
+    auto_corrs = [np.correlate(V - V.mean(), V - V.mean(), mode='full') for V in Ys]
+    auto_corrs = [atc / atc.max() for atc in auto_corrs]
+    X = signal.correlation_lags(len(Ys[0]), len(Ys[0]), 'full')
+
+    atc_of_mean = np.correlate(mean_sig - mean_sig.mean(), mean_sig - mean_sig.mean(), mode='full')
+    atcc = atc_of_mean / atc_of_mean.max()
+    final = np.mean(auto_corrs, axis=0) / atc_of_mean
+    mplot(X, final)  # FWHM -> spectral correlation width of 2.8nm
 
 
 def loss():
@@ -259,6 +293,5 @@ if __name__ == "__main__":
 """
 TODO list: 
 - all enhancements with uncertainty from shot noise   
-- Mode count in fiber
 - Spectral correlation width  
 """
