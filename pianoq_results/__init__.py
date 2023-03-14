@@ -7,3 +7,4 @@ from pianoq_results.waveplates_optimization_result import WavePlateOptimizationR
 from pianoq_results.image_result import VimbaImage, show_image, load_image
 from pianoq_results.scan_result import ScanResult
 from pianoq_results.fits_image import FITSImage
+from pianoq_results.QPPickleResult import QPPickleResult
