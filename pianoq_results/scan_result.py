@@ -1,6 +1,7 @@
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.signal import correlate2d
 import typing
 import pyperclip
 import traceback
@@ -95,11 +96,28 @@ class ScanResult(object):
         axes[1, 1].set_title(f'Coincidences2 {title} - no accidentals')
         my_mesh(self.X, self.Y, self.real_coins2, axes[1, 1])
 
-        axes[0, 0].invert_xaxis()
-        axes[0, 1].invert_xaxis()
-        axes[1, 0].invert_xaxis()
-        axes[1, 1].invert_xaxis()
+        # axes[0, 0].invert_xaxis()
+        # axes[0, 1].invert_xaxis()
+        # axes[1, 0].invert_xaxis()
+        # axes[1, 1].invert_xaxis()
         fig.show()
+
+    @property
+    def displacement_between_coins(self):
+        correlation = correlate2d(self.real_coins2, self.real_coins)
+        i, j = np.unravel_index(np.argmax(correlation), correlation.shape)
+        displacement_pixels = i - self.real_coins.shape[0], j - self.real_coins.shape[1]
+        dx = self.X[1] - self.X[0]
+        dy = self.Y[1] - self.Y[0]
+        displacement_mm = displacement_pixels[0] * dy, displacement_pixels[1] * dx
+        return displacement_mm
+
+    @property
+    def extent(self):
+        dx = (self.X[1] - self.X[0]) / 2
+        dy = (self.Y[1] - self.Y[0]) / 2
+        extent = (self.X[0] - dx, self.X[-1] + dx, self.Y[0] - dy, self.Y[-1] + dy)
+        return extent
 
     def show_both(self):
         self.show(show_singles=True, remove_accidentals=True)
