@@ -18,7 +18,7 @@ class QPPickleResult(object):
     def loadfrom(self, path):
         with open(path, 'rb') as f:
             obj = pickle.load(f)
-            self.__dict__ = obj.__dict__
+            self.__dict__.update(obj.__dict__)
             self.__class__ = obj.__class__
         self.path = path
 
