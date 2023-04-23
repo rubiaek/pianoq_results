@@ -256,6 +256,9 @@ def spectral_correlation_width():
 
 
 def smf_enhancement():
+    # path = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\SMF coupling\2023_03_28_11_11_40_few_best_runs_to_SMF_with_polarizer\2023_03_28_11_11_40_6.pqoptimizer"
+    # path = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\SMF coupling\2023_03_28_11_11_40_few_best_runs_to_SMF_with_polarizer\2023_03_28_11_11_40_4.pqoptimizer"
+    # mean of the two above gives me the 11.3+-0.6
     path = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\SMF coupling\2023_02_06_10_07_13_couple_to_SMF\2023_02_06_10_07_13_2.pqoptimizer"
     res = PianoPSOOptimizationResult()
     res.loadfrom(path)
@@ -329,5 +332,5 @@ def main_article_numbers():
 
 
 if __name__ == "__main__":
-    loss()
+    smf_enhancement()
 
