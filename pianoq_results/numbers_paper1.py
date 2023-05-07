@@ -10,6 +10,8 @@ from pianoq.misc.mplt import mimshow
 from pianoq.lab.scripts.two_speckle_statistics import SpeckleStatisticsResult
 from pianoq_results.scan_result import ScanResult
 from pianoq_results.piano_optimization_result import PianoPSOOptimizationResult
+from scipy.optimize import curve_fit
+from pianoq_results.fits_image import FITSImage
 
 # def mimshow(*args, **kwargs):
 #     pass
@@ -312,6 +314,26 @@ def loss():
 
     print(f'sum_in : {sum_in:.0f}')
     print(f'sum_out: {sum_out:.0f}')
+
+
+def waist_at_crystal(s, e, normalize=False):
+    # This image plane is after f=200 and f=300 I think, so the waist of sigma=44 pixels translates to
+    # 44*3.76*200/300 = ~110um (fit to gaussian of 2*x^2/s^2 in intensity, at 28.2 degrees)
+    dir_path = r'G:\My Drive\Projects\Quantum Piano\Results\Calibrations\SPDC\PPKTP\New-2022-10\f=250_before\Temperature\Image\*.fit'
+    paths = glob.glob(dir_path)
+
+    fi = FITSImage(paths[7])
+    V = fi.image[373, 570:770]
+    gaus = lambda x, x0, sig, A, C: C + A*np.exp(-2*((x - x0) ** 2) / (sig ** 2))
+    dummy_x = np.arange(len(V))
+    popt, pcov = curve_fit(gaus, dummy_x, V, p0=(100, 30, 1700, 500))
+    print(f'sigma={popt[1]}')
+    print(f'fixed telescope sigma um ={popt[1]*3.76*200/300}')
+
+    fig, ax = plt.subplots()
+    ax.plot(V, label='orig')
+    ax.plot(dummy_x, gaus(dummy_x, *popt), '--', label='fit')
+    fig.show()
 
 
 def main_article_numbers():
