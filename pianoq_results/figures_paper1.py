@@ -220,6 +220,7 @@ def show_high_order_loss(dir_path):
 
 
 def show_singles_not_enough(path):
+    # jjson = json.loads(open(r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\SinglesDontOptimizeCoin\2023_02_06_02_55_33_coin_not_optimized_no_spot_use_this\2023_02_06_02_55_33_config.json").read())
     sr = ScanResult()
     sr.loadfrom(path)
 
@@ -227,10 +228,14 @@ def show_singles_not_enough(path):
     im0 = axes[0].imshow(sr.single2s, cmap=COLORMAP, extent=sr.extent)
     add_scalebar(axes[0])
     cbar = fig.colorbar(im0, ax=axes[0])
+    # axes[0].plot(*jjson['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=18,
+    #                markeredgewidth=X_MARKER_EDGEWITDH)
 
     im1 = axes[1].imshow(sr.real_coins, cmap=COLORMAP, extent=sr.extent)
     add_scalebar(axes[1])
     cbar = fig.colorbar(im1, ax=axes[1])
+    # axes[1].plot(*jjson['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=18,
+    #                markeredgewidth=X_MARKER_EDGEWITDH)
 
     fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\singles_not_enough.svg', dpi=fig.dpi)
     fig.show()
