@@ -92,7 +92,7 @@ def show_speckles(path1, path2, path3, show_singles=False):
         im2 = axes[0, 2].imshow(scan3.single2s, vmin=0, vmax=max_singles, cmap=COLORMAP)
         add_scalebar(axes[0, 2])
         cbar = fig.colorbar(im2, ax=axes[0, 2])
-        cbar.set_label('counts / sec', size=26)
+        cbar.set_label('counts/s', size=26)
 
         coin0_ax = axes[1, 0]
         coin1_ax = axes[1, 1]
@@ -114,7 +114,7 @@ def show_speckles(path1, path2, path3, show_singles=False):
     im3 = coin2_ax.imshow(scan3.real_coins, vmin=min_coin, vmax=max_coin, cmap=COLORMAP)
     add_scalebar(coin2_ax)
     cbar = fig.colorbar(im3, ax=coin2_ax)
-    cbar.set_label('counts / sec', size=18)
+    cbar.set_label('counts/s', size=18)
     cbar.ax.tick_params(labelsize=18)
 
     print(f'scan 1 single1s mean: {scan1.single1s.mean():.0f}, single2s mean: {scan1.single2s.mean():.0f} total coin: {scan1.real_coins.sum():.0f}')
@@ -296,9 +296,9 @@ NOT_HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not
 print()
 
 HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralded\Many Speckles\2023_01_01_11_36_57_{num}_speckles.scan"
-# show_speckles(HERALDED_PATH_FORMAT.format(num=1),
-#               HERALDED_PATH_FORMAT.format(num=3),
-#               HERALDED_PATH_FORMAT.format(num=5), show_singles=False)
+show_speckles(HERALDED_PATH_FORMAT.format(num=1),
+              HERALDED_PATH_FORMAT.format(num=3),
+              HERALDED_PATH_FORMAT.format(num=5), show_singles=False)
 
 ############### two spots ###############
 TWO_SPOTS_HEREALDED_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Two Spots\Heralded\2023_01_04_20_15_36_best_double_spot_2'
@@ -310,6 +310,6 @@ HIGH_ORDDER_LOSS_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supple
 # show_high_order_loss(HIGH_ORDDER_LOSS_PATH)
 
 SINGLES_NOT_ENOUGH_PATH = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\SinglesDontOptimizeCoin\2023_02_06_02_55_33_coin_not_optimized_no_spot_use_this\2023_02_06_02_55_33_optimized.scan"
-show_singles_not_enough(SINGLES_NOT_ENOUGH_PATH)
+# show_singles_not_enough(SINGLES_NOT_ENOUGH_PATH)
 
 plt.show()
