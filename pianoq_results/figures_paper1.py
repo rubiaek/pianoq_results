@@ -264,6 +264,7 @@ def show_singles_not_enough(path):
     im0 = axes[0].imshow(sr.single2s, cmap=COLORMAP, extent=sr.extent)
     add_scalebar(axes[0])
     cbar = fig.colorbar(im0, ax=axes[0])
+    cbar.ax.tick_params(labelsize=18)
     cbar.formatter.set_powerlimits((0, 1))
     # axes[0].plot(*jjson['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=18,
     #                markeredgewidth=X_MARKER_EDGEWITDH)
@@ -271,6 +272,7 @@ def show_singles_not_enough(path):
     im1 = axes[1].imshow(sr.real_coins, cmap=COLORMAP, extent=sr.extent)
     add_scalebar(axes[1])
     cbar = fig.colorbar(im1, ax=axes[1])
+    cbar.ax.tick_params(labelsize=18)
     # cbar.formatter.set_powerlimits((0, 1))
     # axes[1].plot(*jjson['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=18,
     #                markeredgewidth=X_MARKER_EDGEWITDH)
