@@ -1,6 +1,9 @@
+import numpy as np
 import glob
 import json
 import matplotlib.pyplot as plt
+
+from pianoq_results.piano_optimization_result import PianoPSOOptimizationResult
 from pianoq_results.scan_result import ScanResult
 from matplotlib_scalebar.scalebar import ScaleBar
 from astropy.io import fits
@@ -280,6 +283,41 @@ def show_singles_not_enough(path):
     fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\singles_not_enough.svg', dpi=fig.dpi)
     fig.show()
 
+
+def show_optimization_to_SMF():
+    path = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\SMF coupling\2023_03_28_11_11_40_few_best_runs_to_SMF_with_polarizer\2023_03_28_11_11_40_4.pqoptimizer"
+    res = PianoPSOOptimizationResult()
+    res.loadfrom(path)
+
+    fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
+
+    costs = []
+    cost_stds = []
+    iterations = []
+    curr_best = 0
+
+    for i, c in enumerate(res.all_costs):
+        if np.abs(c) > curr_best:
+            curr_best = np.abs(res.all_costs[i])
+            costs.append(np.abs(res.all_costs[i]))
+            cost_stds.append(res.all_costs_std[i])
+            iterations.append(i)
+
+    ax.errorbar(iterations, costs, cost_stds, fmt='o--', label='current best', markersize=4)
+
+    random_average_std = res.all_costs[:res.n_for_average_cost].std()
+    ax.axhline(-res.random_average_cost, label='random average counts', color='g', linestyle='--')
+    ax.axhspan(-res.random_average_cost - random_average_std, -res.random_average_cost + random_average_std,
+               alpha=0.4, color='g')
+
+    ax.set_xlabel('iterations', size=16)
+    ax.set_ylabel('heralded ph/s', size=16)
+    ax.tick_params(axis='both', which='major', labelsize=12)
+    ax.legend(prop={'size': 12})
+    fig.show()
+    fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\SMF_optimization.svg', dpi=fig.dpi)
+
+
 ############### optimization ###############
 path_not_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\2022_12_27_15_52_37_for_optimization_integration_8s_all'
 path_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralded\2022_12_19_02_50_01_optimization_integration_5s_all_same'
@@ -298,9 +336,9 @@ NOT_HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not
 print()
 
 HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralded\Many Speckles\2023_01_01_11_36_57_{num}_speckles.scan"
-show_speckles(HERALDED_PATH_FORMAT.format(num=1),
-              HERALDED_PATH_FORMAT.format(num=3),
-              HERALDED_PATH_FORMAT.format(num=5), show_singles=False)
+# show_speckles(HERALDED_PATH_FORMAT.format(num=1),
+#               HERALDED_PATH_FORMAT.format(num=3),
+#               HERALDED_PATH_FORMAT.format(num=5), show_singles=False)
 
 ############### two spots ###############
 TWO_SPOTS_HEREALDED_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Two Spots\Heralded\2023_01_04_20_15_36_best_double_spot_2'
@@ -314,4 +352,5 @@ HIGH_ORDDER_LOSS_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supple
 SINGLES_NOT_ENOUGH_PATH = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\SinglesDontOptimizeCoin\2023_02_06_02_55_33_coin_not_optimized_no_spot_use_this\2023_02_06_02_55_33_optimized.scan"
 # show_singles_not_enough(SINGLES_NOT_ENOUGH_PATH)
 
+show_optimization_to_SMF()
 plt.show()
