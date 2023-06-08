@@ -315,7 +315,7 @@ def show_optimization_to_SMF():
     ax.tick_params(axis='both', which='major', labelsize=12)
     ax.legend(prop={'size': 12})
     fig.show()
-    fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\SMF_optimization.svg', dpi=fig.dpi)
+    fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\SMF_optimization.png', dpi=fig.dpi)
 
 
 ############### optimization ###############
