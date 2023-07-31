@@ -12,7 +12,7 @@ def show_phase_mask(A, title='diffuser'):
     fig.show()
 
 
-class OptimizerResult(object):
+class SLMOptimizationResult(object):
     def __init__(self, diffuser_phase_grid=None, original_speckle_pattern=None, best_result=None,
                  slm_phase_grid=None, powers=None, mid_results=None, original_good=None, opt_method=''):
         self.original_good = original_good
