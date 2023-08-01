@@ -128,7 +128,7 @@ def show_speckles(path1, path2, path3, show_singles=False):
     fig.show()
 
 
-def show_two_spots(path_heralded, path_not_heralded, add_circles=False):
+def show_two_spots(path_heralded, path_not_heralded, add_circles=True):
     path = glob.glob(f'{path_heralded}\\*optimized.scan')[0]
     h_scan = ScanResult(path)
     path = glob.glob(f'{path_heralded}\\*config.json')[0]
@@ -189,7 +189,8 @@ def show_two_spots(path_heralded, path_not_heralded, add_circles=False):
     fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\two_spots_python.svg', dpi=fig.dpi)
     fig.show()
 
-def show_two_spots_new(path_heralded, path_not_heralded):
+
+def show_two_spots_new(path_heralded, path_not_heralded, add_circles=True):
     path = glob.glob(f'{path_heralded}\\*optimized.scan')[0]
     h_scan = ScanResult(path)
     path = glob.glob(f'{path_heralded}\\*config.json')[0]
@@ -221,6 +222,28 @@ def show_two_spots_new(path_heralded, path_not_heralded):
     cbar = fig.colorbar(im_nh, ax=nh_ax)
     cbar.ax.tick_params(labelsize=18)
     cbar.formatter.set_powerlimits((0, 0))
+
+
+    other_y = h_json['optimized_xy'][1] + 7*0.025  # h_scan.displacement_between_coins[0]
+    other_x = h_json['optimized_xy'][0] + 2*0.025  # h_scan.displacement_between_coins[1]
+    h_circ2 = plt.Circle((other_x, other_y), 0.05, color='r', fill=False)
+
+    if add_circles:
+        color = 'r'
+        nh_circ1 = plt.Circle(nh_json['optimized_xy'], 0.05, color=color, fill=False)
+        other_y = nh_json['optimized_xy'][1] + 7*0.025  # nh_scan.displacement_between_coins[0]
+        other_x = nh_json['optimized_xy'][0] + 2*0.025  # nh_scan.displacement_between_coins[1]
+        nh_circ2 = plt.Circle((other_x, other_y), 0.05, color=color, fill=False)
+
+        h_circ1 = plt.Circle(h_json['optimized_xy'], 0.05, color=color, fill=False)
+        other_y = h_json['optimized_xy'][1] + 7*0.025  # h_scan.displacement_between_coins[0]
+        other_x = h_json['optimized_xy'][0] + 2*0.025  # h_scan.displacement_between_coins[1]
+        h_circ2 = plt.Circle((other_x, other_y), 0.05, color=color, fill=False)
+
+        h_ax.add_patch(h_circ1)
+        h_ax.add_patch(h_circ2)
+        nh_ax.add_patch(nh_circ1)
+        nh_ax.add_patch(nh_circ2)
 
     fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\two_spots_python.svg', dpi=fig.dpi)
     fig.show()
@@ -315,7 +338,7 @@ def show_optimization_to_SMF():
     ax.tick_params(axis='both', which='major', labelsize=12)
     ax.legend(prop={'size': 12})
     fig.show()
-    fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\SMF_optimization.svg', dpi=fig.dpi)
+    fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\SMF_optimization.png', dpi=fig.dpi)
 
 
 ############### optimization ###############
@@ -344,7 +367,7 @@ HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralde
 TWO_SPOTS_HEREALDED_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Two Spots\Heralded\2023_01_04_20_15_36_best_double_spot_2'
 TWO_SPOTS_NOT_HEREALDED_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Two Spots\Not Heralded\2023_01_08_11_51_22_double_spot_integration_2s_pretty_good'
 # show_two_spots(TWO_SPOTS_HEREALDED_PATH, TWO_SPOTS_NOT_HEREALDED_PATH)
-# show_two_spots_new(TWO_SPOTS_HEREALDED_PATH, TWO_SPOTS_NOT_HEREALDED_PATH)
+show_two_spots_new(TWO_SPOTS_HEREALDED_PATH, TWO_SPOTS_NOT_HEREALDED_PATH)
 
 HIGH_ORDDER_LOSS_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\SinglesWithAndWithoutPiano'
 # show_high_order_loss(HIGH_ORDDER_LOSS_PATH)
@@ -352,5 +375,5 @@ HIGH_ORDDER_LOSS_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supple
 SINGLES_NOT_ENOUGH_PATH = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\SinglesDontOptimizeCoin\2023_02_06_02_55_33_coin_not_optimized_no_spot_use_this\2023_02_06_02_55_33_optimized.scan"
 # show_singles_not_enough(SINGLES_NOT_ENOUGH_PATH)
 
-show_optimization_to_SMF()
+# show_optimization_to_SMF()
 plt.show()
