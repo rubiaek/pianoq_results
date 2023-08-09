@@ -25,7 +25,10 @@ class SLMOptimizationResult(QPPickleResult):
         self.all_phase_masks = all_phase_masks or []
         self.all_costs = all_costs or []
         self.all_cost_witnesses = all_cost_witnesses or []
+
         self.opt_method = opt_method
+        self.best_phi_method = None
+        self.roi = None
 
         # axes[1, 0].imshow(self.phase_masks[-1], cmap='gray')
         # fig.show()
