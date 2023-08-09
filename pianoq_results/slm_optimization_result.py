@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 
 from pianoq_results.QPPickleResult import QPPickleResult
 
@@ -36,4 +37,9 @@ class SLMOptimizationResult(QPPickleResult):
         ax.set_xlabel("Iterations")
         ax.set_ylabel("Power (Arb. units)")
         return fig, ax
+
+    @property
+    def best_phase_mask(self):
+        ind = np.argmax(self.costs)
+        return self.phase_masks[ind]
 
