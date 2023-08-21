@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import glob
+
+from pianoq_results.misc import my_mesh
 from pianoq_results.scan_result import ScanResult
 from pianoq_results.fits_image import FITSImage
 from pianoq_results.slm_optimization_result import SLMOptimizationResult
@@ -30,7 +32,8 @@ class KlyshkoResult(object):
         self.SPDC_speckles = ScanResult(glob.glob(f'{self.dir_path}\\*two_photon_speckle*')[0])
         self.SPDC_optimized = ScanResult(glob.glob(f'{self.dir_path}\\*corr_optimized*')[0])
 
-        self.optimization = SLMOptimizationResult(glob.glob(f'{self.dir_path}\\*.optimizer2')[0])
+        self.optimization = SLMOptimizationResult()
+        self.optimization.loadfrom(glob.glob(f'{self.dir_path}\\*.optimizer2')[0])
 
     def show(self):
         fig, axes = plt.subplots(3, 2)
@@ -44,15 +47,26 @@ class KlyshkoResult(object):
         fig.colorbar(imm, ax=axes[2, 0])
         axes[2, 0].set_title('diode optimized')
 
-        imm = axes[0, 1].imshow(self.SPDC_before.real_coins)
-        fig.colorbar(imm, ax=axes[0, 1])
+        my_mesh(self.SPDC_before.X, self.SPDC_before.Y, self.SPDC_before.real_coins, axes[0, 1])
+        axes[0, 1].invert_xaxis()
         axes[0, 1].set_title('SPDC before')
-        imm = axes[1, 1].imshow(self.SPDC_speckles.real_coins)
-        fig.colorbar(imm, ax=axes[1, 1])
-        axes[1, 1].set_title('SPDC speckles')
-        imm = axes[2, 1].imshow(self.SPDC_optimized.real_coins)
-        fig.colorbar(imm, ax=axes[2, 1])
+
+        my_mesh(self.SPDC_speckles.X, self.SPDC_speckles.Y, self.SPDC_speckles.real_coins, axes[1, 1])
+        axes[1, 1].invert_xaxis()
+        axes[1, 1].set_title('SPDC speckle')
+
+        my_mesh(self.SPDC_optimized.X, self.SPDC_optimized.Y, self.SPDC_optimized.real_coins, axes[2, 1])
+        axes[2, 1].invert_xaxis()
         axes[2, 1].set_title('SPDC optimized')
+
+        # imm = axes[0, 1].imshow(self.SPDC_before.real_coins)
+        # fig.colorbar(imm, ax=axes[0, 1])
+        # imm = axes[1, 1].imshow(self.SPDC_speckles.real_coins)
+        # fig.colorbar(imm, ax=axes[1, 1])
+        # axes[1, 1].set_title('SPDC speckles')
+        # imm = axes[2, 1].imshow(self.SPDC_optimized.real_coins)
+        # fig.colorbar(imm, ax=axes[2, 1])
+        # axes[2, 1].set_title('SPDC optimized')
         fig.show()
 
         fig, ax = plt.subplots()
