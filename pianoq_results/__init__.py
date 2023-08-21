@@ -8,3 +8,5 @@ from pianoq_results.image_result import VimbaImage, show_image, load_image
 from pianoq_results.scan_result import ScanResult
 from pianoq_results.fits_image import FITSImage
 from pianoq_results.QPPickleResult import QPPickleResult
+from pianoq_results.slm_optimization_result import SLMOptimizationResult
+from pianoq_results.klyshko_result import KlyshkoResult

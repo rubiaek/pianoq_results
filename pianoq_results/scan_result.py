@@ -49,7 +49,7 @@ class ScanResult(object):
                       f'max std: {np.sqrt(self.accidentals.max() * self.integration_time) / self.integration_time :.0f}')
         my_mesh(self.X, self.Y, coin, ax)
         ax.invert_xaxis()
-        ax.fig.show()
+        ax.figure.show()
 
         if show_singles:
             fig, axes = plt.subplots(1, 2)
@@ -61,7 +61,7 @@ class ScanResult(object):
             axes[1].set_title(f'Single counts 2 {title}')
             fig.show()
 
-        return ax.fig, ax
+        return ax.figure, ax
 
     @property
     def real_coins(self):
