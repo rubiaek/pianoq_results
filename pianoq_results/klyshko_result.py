@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import glob
+import json
+import SLMlayout
 
 from pianoq_results.misc import my_mesh
 from pianoq_results.scan_result import ScanResult
@@ -34,6 +36,11 @@ class KlyshkoResult(object):
 
         self.optimization = SLMOptimizationResult()
         self.optimization.loadfrom(glob.glob(f'{self.dir_path}\\*.optimizer2')[0])
+
+        self.config = json.loads(open(glob.glob(f'{self.dir_path}\\*config.json')[0]).read())
+        self.__dict__.update(self.config)
+        self.hexs = SLMlayout.Hexagons(radius=self.slm_pinhole_radius, cellSize=self.cell_size,
+                                       resolution=(1024, 1272), center=self.slm_pinhole_center, method='equal')
 
     def show(self):
         fig, axes = plt.subplots(3, 2)
