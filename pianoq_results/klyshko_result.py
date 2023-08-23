@@ -1,8 +1,8 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import glob
 import json
 import SLMlayout
+import numpy as np
+import matplotlib.pyplot as plt
 
 from pianoq_results.misc import my_mesh
 from pianoq_results.scan_result import ScanResult
@@ -42,17 +42,24 @@ class KlyshkoResult(object):
         self.hexs = SLMlayout.Hexagons(radius=self.slm_pinhole_radius, cellSize=self.cell_size,
                                        resolution=(1024, 1272), center=self.slm_pinhole_center, method='equal')
 
-    def show(self):
-        fig, axes = plt.subplots(3, 2)
+    def show(self, full=False, xs=True):
+        fig, axes = plt.subplots(3, 2, figsize=(6.8, 8), constrained_layout=True)
         imm = axes[0, 0].imshow(self.diode_before.image)
         fig.colorbar(imm, ax=axes[0, 0])
         axes[0, 0].set_title('diode before')
+
         imm = axes[1, 0].imshow(self.diode_speckles.image)
         fig.colorbar(imm, ax=axes[1, 0])
         axes[1, 0].set_title('diode speckles')
+
         imm = axes[2, 0].imshow(self.diode_optimized.image)
         fig.colorbar(imm, ax=axes[2, 0])
         axes[2, 0].set_title('diode optimized')
+
+        if not full:
+            self._set_lims(axes[0, 0])
+            self._set_lims(axes[1, 0])
+            self._set_lims(axes[2, 0])
 
         my_mesh(self.SPDC_before.X, self.SPDC_before.Y, self.SPDC_before.real_coins, axes[0, 1])
         axes[0, 1].invert_xaxis()
@@ -66,18 +73,40 @@ class KlyshkoResult(object):
         axes[2, 1].invert_xaxis()
         axes[2, 1].set_title('SPDC optimized')
 
-        # imm = axes[0, 1].imshow(self.SPDC_before.real_coins)
-        # fig.colorbar(imm, ax=axes[0, 1])
-        # imm = axes[1, 1].imshow(self.SPDC_speckles.real_coins)
-        # fig.colorbar(imm, ax=axes[1, 1])
-        # axes[1, 1].set_title('SPDC speckles')
-        # imm = axes[2, 1].imshow(self.SPDC_optimized.real_coins)
-        # fig.colorbar(imm, ax=axes[2, 1])
-        # axes[2, 1].set_title('SPDC optimized')
+        if xs:
+            X_MARKER_COLOR = '#929591'
+            X_MARKER_EDGEWITDH = 1.5
+            axes[0, 1].plot(self.optimization_x_loc, self.optimization_y_loc, '+', markeredgecolor=X_MARKER_COLOR,
+                            markersize=11, markeredgewidth=X_MARKER_EDGEWITDH)
+            axes[1, 1].plot(self.optimization_x_loc, self.optimization_y_loc, '+', markeredgecolor=X_MARKER_COLOR,
+                            markersize=11, markeredgewidth=X_MARKER_EDGEWITDH)
+            axes[2, 1].plot(self.optimization_x_loc, self.optimization_y_loc, '+', markeredgecolor=X_MARKER_COLOR,
+                            markersize=11, markeredgewidth=X_MARKER_EDGEWITDH)
+
         fig.show()
 
+    def _set_lims(self, ax):
+        A = self.diode_before.image
+        ind_row, ind_col = np.unravel_index(np.argmax(A, axis=None), A.shape)
+        X = self.SPDC_before.X
+        Y = self.SPDC_before.Y
+        pix_size = self.diode_before.pix_size
+        X_pixs = (X[-1] - X[0])*1e-3 / pix_size
+        Y_pixs = (Y[-1] - Y[0]) * 1e-3 / pix_size
+
+        ax.set_xlim(left=ind_col - X_pixs/2, right=ind_col + X_pixs/2)
+        ax.set_ylim(bottom=ind_row - Y_pixs/2, top=ind_row + Y_pixs/2)
+
+    def show_optimization_process(self):
         fig, ax = plt.subplots()
         ax.plot(self.optimization.costs)
         ax.set_xlabel('Iterations')
         ax.set_ylabel('cost')
+        fig.show()
+
+    def show_best_phase(self):
+        phase = self.hexs.getImageFromVec(self.optimization.best_phase_mask, dtype=float)
+        fig, ax = plt.subplots()
+        im = ax.imshow(phase, cmap='gray')
+        fig.colorbar(im, ax=ax)
         fig.show()
