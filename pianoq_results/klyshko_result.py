@@ -110,3 +110,36 @@ class KlyshkoResult(object):
         im = ax.imshow(phase, cmap='gray')
         fig.colorbar(im, ax=ax)
         fig.show()
+
+    @property
+    def efficiency_diode(self):
+        return self.diode_optimized.image.max() / self.diode_before.image.max()
+
+    @property
+    def efficiency_SPDC(self):
+        return self.SPDC_optimized.real_coins.max() / self.SPDC_before.real_coins.max()
+
+    @property
+    def enhancement_diode(self):
+        A = self.diode_before.image
+        ind_row, ind_col = np.unravel_index(np.argmax(A, axis=None), A.shape)
+        X = self.SPDC_before.X
+        Y = self.SPDC_before.Y
+        pix_size = self.diode_before.pix_size
+        X_pixs = (X.max() - X.min())*1e-3 / pix_size
+        Y_pixs = (Y.max() - Y.min()) * 1e-3 / pix_size
+        mask_for_enhancement = np.index_exp[int(ind_row - Y_pixs//2): int(ind_row + Y_pixs//2), int(ind_col - X_pixs//2): int(ind_col + X_pixs//2)]
+        return self.diode_optimized.image.max() / self.diode_speckles.image[mask_for_enhancement].mean()
+
+    @property
+    def enhancement_SPDC(self):
+        # TODO: don't take only max in any of the enhancement / efficiency functions, rather somehow the speckle grain
+        speckles_coins = self.SPDC_speckles.real_coins.copy()
+        speckles_coins[speckles_coins < 0] = 0
+        return self.SPDC_optimized.real_coins.max() / speckles_coins.mean()
+
+    def print(self):
+        print(f'Diode enhancement: {self.enhancement_diode}')
+        print(f'SPDC enhancement: {self.enhancement_SPDC}')
+        print(f'Diode efficiency: {self.efficiency_diode}')
+        print(f'SPDC efficiency: {self.efficiency_SPDC}')
