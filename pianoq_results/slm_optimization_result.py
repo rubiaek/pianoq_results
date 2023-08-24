@@ -46,3 +46,9 @@ class SLMOptimizationResult(QPPickleResult):
         ind = np.argmax(self.costs)
         return self.phase_masks[ind]
 
+    @property
+    def enhancement(self):
+        return self.costs.max() / self.costs[0]
+
+    def print(self):
+        print(f'enhancement: {self.enhancement}')
