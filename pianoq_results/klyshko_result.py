@@ -16,6 +16,7 @@ class KlyshkoResult(object):
         self.diode_before = None
         self.diode_speckles = None
         self.diode_optimized = None
+        self.diode_dark = None
         self.SPDC_before = None
         self.SPDC_speckles = None
         self.SPDC_optimized = None
@@ -26,13 +27,16 @@ class KlyshkoResult(object):
 
     def loadfrom(self, dir_path):
         self.dir_path = dir_path
-        self.diode_before = FITSImage(glob.glob(f'{self.dir_path}\\*diode_no_diffuser*')[0])
-        self.diode_speckles = FITSImage(glob.glob(f'{self.dir_path}\\*diode_speckle*')[0])
-        self.diode_optimized = FITSImage(glob.glob(f'{self.dir_path}\\*diode_optimized*')[0])
+        self.diode_before = self._load_fits('diode_no_diffuser')
+        self.diode_speckles = self._load_fits('diode_speckle')
+        self.diode_optimized = self._load_fits('diode_optimized')
+        self.diode_dark = self._load_fits('dark')
 
-        self.SPDC_before = ScanResult(glob.glob(f'{self.dir_path}\\*corr_no_diffuser*')[0])
-        self.SPDC_speckles = ScanResult(glob.glob(f'{self.dir_path}\\*two_photon_speckle*')[0])
-        self.SPDC_optimized = ScanResult(glob.glob(f'{self.dir_path}\\*corr_optimized*')[0])
+        self._subtract_dark_from_diode_images()
+
+        self.SPDC_before = self._load_scan('corr_no_diffuser')
+        self.SPDC_speckles = self._load_scan('two_photon_speckle')
+        self.SPDC_optimized = self._load_scan('corr_optimized')
 
         self.optimization = SLMOptimizationResult()
         self.optimization.loadfrom(glob.glob(f'{self.dir_path}\\*.optimizer2')[0])
@@ -41,6 +45,47 @@ class KlyshkoResult(object):
         self.__dict__.update(self.config)
         self.hexs = SLMlayout.Hexagons(radius=self.slm_pinhole_radius, cellSize=self.cell_size,
                                        resolution=(1024, 1272), center=self.slm_pinhole_center, method='equal')
+
+    def _load_fits(self, title):
+        paths = glob.glob(f'{self.dir_path}\\*{title}*')
+        if len(paths) == 0:
+            im = FITSImage()
+            im.image = np.zeros((800, 800))
+            return im
+        elif len(paths) == 1:
+            return FITSImage(paths[0])
+        else:
+            raise Exception("Why two paths the same? ")
+
+    def _load_scan(self, title):
+        paths = glob.glob(f'{self.dir_path}\\*{title}*')
+        if len(paths) == 0:
+            scan = ScanResult()
+            scan.single1s = np.zeros((20, 20))
+            scan.single2s = np.zeros((20, 20))
+            scan.coincidences = np.zeros((20, 20))
+            return scan
+        elif len(paths) == 1:
+            return ScanResult(paths[0])
+        else:
+            raise Exception("Why two paths the same? ")
+
+    def _subtract_dark_from_diode_images(self):
+        if self.diode_dark.image.shape != self.diode_before.image.shape:
+            print('couldn\'t subtract dark counts from diode images')
+            return
+        elif self.diode_dark.image.sum() == 0:
+            print('no dark image')
+            return
+        else:
+            self.diode_optimized.image = self.diode_optimized.image.astype(float) - self.diode_dark.image
+            self.diode_optimized.image[self.diode_optimized.image < 0] = 0
+
+            self.diode_speckles.image = self.diode_speckles.image.astype(float) - self.diode_dark.image
+            self.diode_speckles.image[self.diode_speckles.image < 0] = 0
+
+            self.diode_before.image = self.diode_before.image.astype(float) - self.diode_dark.image
+            self.diode_before.image[self.diode_before.image < 0] = 0
 
     def show(self, full=False, xs=True):
         fig, axes = plt.subplots(3, 2, figsize=(6.8, 8), constrained_layout=True)
