@@ -188,3 +188,26 @@ class KlyshkoResult(object):
         print(f'SPDC enhancement: {self.enhancement_SPDC}')
         print(f'Diode efficiency: {self.efficiency_diode}')
         print(f'SPDC efficiency: {self.efficiency_SPDC}')
+
+
+def show_speckle_comparison(dir_path, title):
+    fig, axes = plt.subplots(1, 3)
+    diffuser_path = glob.glob(f'{dir_path}\\*{title}*npz')[0]
+    phase_mask = np.load(diffuser_path)['diffuser']
+    imm = axes[0].imshow(phase_mask, cmap='gray')
+    fig.colorbar(imm, ax=axes[0])
+    axes[0].set_title('diffuser phase')
+
+    diode_path = glob.glob(f'{dir_path}\\*{title}*fits')[0]
+    diode_im = FITSImage(diode_path)
+    imm = axes[1].imshow(diode_im.image)
+    fig.colorbar(imm, ax=axes[1])
+    axes[1].set_title('diode speckle')
+
+    SPDC_path = glob.glob(f'{dir_path}\\*{title}*scan')[0]
+    scan = ScanResult(SPDC_path)
+    my_mesh(scan.X, scan.Y, scan.real_coins, axes[2])
+    axes[2].invert_xaxis()
+    axes[2].set_title('SPDC speckle')
+
+    fig.show()
