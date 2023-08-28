@@ -184,6 +184,9 @@ class KlyshkoResult(object):
         return self.SPDC_optimized.real_coins.max() / speckles_coins.mean()
 
     def print(self):
+        print('#########################')
+        print(f'comment: {self.comment}')
+        print('#########################')
         print(f'Diode enhancement: {self.enhancement_diode}')
         print(f'SPDC enhancement: {self.enhancement_SPDC}')
         print(f'Diode efficiency: {self.efficiency_diode}')
