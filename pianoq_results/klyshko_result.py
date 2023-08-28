@@ -1,3 +1,4 @@
+import re
 import glob
 import json
 import SLMlayout
@@ -229,5 +230,23 @@ def show_speckle_comparison(dir_path, title):
     Y_pixs = (Y[-1] - Y[0]) * 1e-3 / pix_size
     axes[1].set_xlim(left=ind_col - X_pixs/2, right=ind_col + X_pixs/2)
     axes[1].set_ylim(bottom=ind_row - Y_pixs/2, top=ind_row + Y_pixs/2)
+
+    fig.show()
+
+
+def show_memory(dir_path, show_ds=(50, 150, 250), classic=False):
+    if classic:
+        paths = glob.glob(f'{dir_path}\\*d=*um.fits')
+    else:
+        paths = glob.glob(f'{dir_path}\\*d=*um.scan')
+    all_ds = np.array([re.findall('.*d=(.*)um', path)[0] for path in paths]).astype(int)
+
+    fig, axes = plt.subplots(1, len(show_ds), figsize=(len(show_ds)*3.5, 3))
+    for i in range(len(show_ds)):
+        ind = np.where(all_ds == show_ds[i])
+        scan = ScanResult(paths[ind])
+        my_mesh(scan.X, scan.Y, scan.real_coins, axes[i])
+        axes[i].invert_xaxis()
+        axes[i].set_title(f'd = {show_ds[i]}')
 
     fig.show()
