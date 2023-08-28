@@ -191,23 +191,39 @@ class KlyshkoResult(object):
 
 
 def show_speckle_comparison(dir_path, title):
-    fig, axes = plt.subplots(1, 3)
+    fig, axes = plt.subplots(1, 3, figsize=(11, 3))
+    # phase mask
     diffuser_path = glob.glob(f'{dir_path}\\*{title}*npz')[0]
     phase_mask = np.load(diffuser_path)['diffuser']
     imm = axes[0].imshow(phase_mask, cmap='gray')
     fig.colorbar(imm, ax=axes[0])
     axes[0].set_title('diffuser phase')
 
+    # Diode
     diode_path = glob.glob(f'{dir_path}\\*{title}*fits')[0]
     diode_im = FITSImage(diode_path)
     imm = axes[1].imshow(diode_im.image)
     fig.colorbar(imm, ax=axes[1])
     axes[1].set_title('diode speckle')
 
+    # SPDC scan
     SPDC_path = glob.glob(f'{dir_path}\\*{title}*scan')[0]
     scan = ScanResult(SPDC_path)
     my_mesh(scan.X, scan.Y, scan.real_coins, axes[2])
     axes[2].invert_xaxis()
     axes[2].set_title('SPDC speckle')
+
+    # diode limits
+    diode_before_path = glob.glob(f'{dir_path}\\*normal*fits')[0]
+    diode_before_im = FITSImage(diode_path)
+    A = diode_before_im.image
+    ind_row, ind_col = np.unravel_index(np.argmax(A, axis=None), A.shape)
+    X = scan.X
+    Y = scan.Y
+    pix_size = diode_before_im.pix_size
+    X_pixs = (X[-1] - X[0])*1e-3 / pix_size
+    Y_pixs = (Y[-1] - Y[0]) * 1e-3 / pix_size
+    axes[1].set_xlim(left=ind_col - X_pixs/2, right=ind_col + X_pixs/2)
+    axes[1].set_ylim(bottom=ind_row - Y_pixs/2, top=ind_row + Y_pixs/2)
 
     fig.show()
