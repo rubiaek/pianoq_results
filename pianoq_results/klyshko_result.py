@@ -155,6 +155,7 @@ class KlyshkoResult(object):
         im = ax.imshow(phase, cmap='gray')
         fig.colorbar(im, ax=ax)
         fig.show()
+        return phase
 
     @property
     def efficiency_diode(self):
@@ -188,6 +189,9 @@ class KlyshkoResult(object):
         print(f'SPDC enhancement: {self.enhancement_SPDC}')
         print(f'Diode efficiency: {self.efficiency_diode}')
         print(f'SPDC efficiency: {self.efficiency_SPDC}')
+
+    def reload(self):
+        self.loadfrom(self.dir_path)
 
 
 def show_speckle_comparison(dir_path, title):
