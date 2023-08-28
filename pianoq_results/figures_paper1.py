@@ -1,6 +1,9 @@
+import numpy as np
 import glob
 import json
 import matplotlib.pyplot as plt
+
+from pianoq_results.piano_optimization_result import PianoPSOOptimizationResult
 from pianoq_results.scan_result import ScanResult
 from matplotlib_scalebar.scalebar import ScaleBar
 from astropy.io import fits
@@ -12,10 +15,10 @@ X_MARKER_EDGEWITDH = 1.5
 
 def add_scalebar(ax):
     # setting dx to one since the image has an extent
-    scalebar = ScaleBar(1, units='mm', location='upper right', length_fraction=1 / 3, box_alpha=0, color='white')
+    # scalebar = ScaleBar(1, units='mm', location='upper right', length_fraction=1 / 3, box_alpha=0, color='white')
     ax.axis('off')
-    ax.add_artist(scalebar)
-
+    # ax.add_artist(scalebar)
+    pass  # might as well add scale bar in powerpoint
 
 def show_optimization(dir_path, h_type):
     path = glob.glob(f'{dir_path}\\*speckles.scan')[0]
@@ -35,28 +38,28 @@ def show_optimization(dir_path, h_type):
 
     fig, axes = plt.subplots(2, 2, figsize=(6, 5), constrained_layout=True)
 
-    im0 = axes[0, 0].imshow(speckle_scan.single2s, vmin=0, vmax=max_singles, cmap=COLORMAP, extent=speckle_scan.extent)
+    im0 = axes[1, 0].imshow(speckle_scan.single2s, vmin=0, vmax=max_singles, cmap=COLORMAP, extent=speckle_scan.extent)
     add_scalebar(axes[0, 0])
     # fig.colorbar(im0, ax=axes[0, 0])
 
-    im1 = axes[1, 0].imshow(speckle_scan.real_coins, vmin=min_coin, vmax=max_coin, cmap=COLORMAP, extent=speckle_scan.extent)
+    im1 = axes[0, 0].imshow(speckle_scan.real_coins, vmin=min_coin, vmax=max_coin, cmap=COLORMAP, extent=speckle_scan.extent)
     add_scalebar(axes[1, 0])
     # fig.colorbar(im1, ax=axes[1, 0])
 
-    im2 = axes[0, 1].imshow(optimized_scan.single2s, vmin=0, vmax=max_singles, cmap=COLORMAP, extent=speckle_scan.extent)
+    im2 = axes[1, 1].imshow(optimized_scan.single2s, vmin=0, vmax=max_singles, cmap=COLORMAP, extent=speckle_scan.extent)
     add_scalebar(axes[0, 1])
-    axes[0, 1].plot(*jjson['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=11, markeredgewidth=X_MARKER_EDGEWITDH)
-    cbar = fig.colorbar(im2, ax=axes[0, 1])
+    # axes[0, 1].plot(*jjson['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=11, markeredgewidth=X_MARKER_EDGEWITDH)
+    cbar = fig.colorbar(im2, ax=axes[1, 1])
     cbar.ax.locator_params(nbins=4)
     cbar.formatter.set_powerlimits((0, 0))
     # cbar.set_label('Photons/s', size=18)
     cbar.ax.tick_params(labelsize=18)
 
 
-    im3 = axes[1, 1].imshow(optimized_scan.real_coins, vmin=min_coin, vmax=max_coin, cmap=COLORMAP, extent=speckle_scan.extent)
+    im3 = axes[0, 1].imshow(optimized_scan.real_coins, vmin=min_coin, vmax=max_coin, cmap=COLORMAP, extent=speckle_scan.extent)
     add_scalebar(axes[1, 1])
-    axes[1, 1].plot(*jjson['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=11, markeredgewidth=X_MARKER_EDGEWITDH)
-    cbar = fig.colorbar(im3, ax=axes[1, 1])  # , ticks=[0, max_coin])
+    # axes[1, 1].plot(*jjson['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=11, markeredgewidth=X_MARKER_EDGEWITDH)
+    cbar = fig.colorbar(im3, ax=axes[0, 1])  # , ticks=[0, max_coin])
     cbar.ax.locator_params(nbins=4)
     cbar.formatter.set_powerlimits((0, 0))
     # cbar.set_label('Pairs/s', size=18)
@@ -92,7 +95,7 @@ def show_speckles(path1, path2, path3, show_singles=False):
         im2 = axes[0, 2].imshow(scan3.single2s, vmin=0, vmax=max_singles, cmap=COLORMAP)
         add_scalebar(axes[0, 2])
         cbar = fig.colorbar(im2, ax=axes[0, 2])
-        cbar.set_label('counts / sec', size=26)
+        cbar.set_label('counts/s', size=26)
 
         coin0_ax = axes[1, 0]
         coin1_ax = axes[1, 1]
@@ -114,7 +117,7 @@ def show_speckles(path1, path2, path3, show_singles=False):
     im3 = coin2_ax.imshow(scan3.real_coins, vmin=min_coin, vmax=max_coin, cmap=COLORMAP)
     add_scalebar(coin2_ax)
     cbar = fig.colorbar(im3, ax=coin2_ax)
-    cbar.set_label('counts / sec', size=18)
+    cbar.set_label('counts/s', size=18)
     cbar.ax.tick_params(labelsize=18)
 
     print(f'scan 1 single1s mean: {scan1.single1s.mean():.0f}, single2s mean: {scan1.single2s.mean():.0f} total coin: {scan1.real_coins.sum():.0f}')
@@ -125,7 +128,7 @@ def show_speckles(path1, path2, path3, show_singles=False):
     fig.show()
 
 
-def show_two_spots(path_heralded, path_not_heralded, add_circles=False):
+def show_two_spots(path_heralded, path_not_heralded, add_circles=True):
     path = glob.glob(f'{path_heralded}\\*optimized.scan')[0]
     h_scan = ScanResult(path)
     path = glob.glob(f'{path_heralded}\\*config.json')[0]
@@ -151,8 +154,8 @@ def show_two_spots(path_heralded, path_not_heralded, add_circles=False):
     other_x = h_json['optimized_xy'][0] + 2*0.025  # h_scan.displacement_between_coins[1]
     h_circ2 = plt.Circle((other_x, other_y), 0.05, color='r', fill=False)
 
-    h_ax.plot(*h_json['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=30, markeredgewidth=X_MARKER_EDGEWITDH)
-    h_ax.plot(other_x, other_y, '+', markeredgecolor=X_MARKER_COLOR, markersize=30, markeredgewidth=X_MARKER_EDGEWITDH)
+    # h_ax.plot(*h_json['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=30, markeredgewidth=X_MARKER_EDGEWITDH)
+    # h_ax.plot(other_x, other_y, '+', markeredgecolor=X_MARKER_COLOR, markersize=30, markeredgewidth=X_MARKER_EDGEWITDH)
 
     if add_circles:
         h_ax.add_patch(h_circ1)
@@ -171,8 +174,8 @@ def show_two_spots(path_heralded, path_not_heralded, add_circles=False):
     other_x = nh_json['optimized_xy'][0] + 2*0.025  # nh_scan.displacement_between_coins[1]
     nh_circ2 = plt.Circle((other_x, other_y), 0.05, color='r', fill=False)
 
-    nh_ax.plot(*nh_json['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=30, markeredgewidth=X_MARKER_EDGEWITDH)
-    nh_ax.plot(other_x, other_y, '+', markeredgecolor=X_MARKER_COLOR, markersize=30, markeredgewidth=X_MARKER_EDGEWITDH)
+    # nh_ax.plot(*nh_json['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=30, markeredgewidth=X_MARKER_EDGEWITDH)
+    # nh_ax.plot(other_x, other_y, '+', markeredgecolor=X_MARKER_COLOR, markersize=30, markeredgewidth=X_MARKER_EDGEWITDH)
 
     if add_circles:
         nh_ax.add_patch(nh_circ1)
@@ -182,6 +185,65 @@ def show_two_spots(path_heralded, path_not_heralded, add_circles=False):
     cbar.set_label('Pairs/s', size=18)
     cbar.ax.tick_params(labelsize=18)
     cbar.formatter.set_powerlimits((0, 0))
+
+    fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\two_spots_python.svg', dpi=fig.dpi)
+    fig.show()
+
+
+def show_two_spots_new(path_heralded, path_not_heralded, add_circles=True):
+    path = glob.glob(f'{path_heralded}\\*optimized.scan')[0]
+    h_scan = ScanResult(path)
+    path = glob.glob(f'{path_heralded}\\*config.json')[0]
+    h_json = json.loads(open(path).read())
+
+    path = glob.glob(f'{path_not_heralded}\\*optimized.scan')[0]
+    nh_scan = ScanResult(path)
+    path = glob.glob(f'{path_not_heralded}\\*config.json')[0]
+    nh_json = json.loads(open(path).read())
+
+    # v_max = max(nh_scan.real_coins2.max(), h_scan.real_coins2.max())
+    # v_min = min(nh_scan.real_coins2.min(), h_scan.real_coins2.min())
+
+    fig, axes = plt.subplots(1, 2, figsize=(8, 3.5), constrained_layout=True)
+    h_ax, nh_ax = axes
+
+    # Heralded
+    im_h = h_ax.imshow(h_scan.real_coins2, cmap=COLORMAP, extent=h_scan.extent, vmin=min(0, h_scan.real_coins2.min()))
+    add_scalebar(h_ax)
+
+    cbar = fig.colorbar(im_h, ax=h_ax)
+    cbar.ax.tick_params(labelsize=18)
+    cbar.formatter.set_powerlimits((0, 0))
+
+    # Not Heralded
+    im_nh = nh_ax.imshow(nh_scan.real_coins2, cmap=COLORMAP, extent=nh_scan.extent, vmin=min(0, nh_scan.real_coins2.min()))
+    add_scalebar(nh_ax)
+
+    cbar = fig.colorbar(im_nh, ax=nh_ax)
+    cbar.ax.tick_params(labelsize=18)
+    cbar.formatter.set_powerlimits((0, 0))
+
+
+    other_y = h_json['optimized_xy'][1] + 7*0.025  # h_scan.displacement_between_coins[0]
+    other_x = h_json['optimized_xy'][0] + 2*0.025  # h_scan.displacement_between_coins[1]
+    h_circ2 = plt.Circle((other_x, other_y), 0.05, color='r', fill=False)
+
+    if add_circles:
+        color = 'r'
+        nh_circ1 = plt.Circle(nh_json['optimized_xy'], 0.05, color=color, fill=False)
+        other_y = nh_json['optimized_xy'][1] + 7*0.025  # nh_scan.displacement_between_coins[0]
+        other_x = nh_json['optimized_xy'][0] + 2*0.025  # nh_scan.displacement_between_coins[1]
+        nh_circ2 = plt.Circle((other_x, other_y), 0.05, color=color, fill=False)
+
+        h_circ1 = plt.Circle(h_json['optimized_xy'], 0.05, color=color, fill=False)
+        other_y = h_json['optimized_xy'][1] + 7*0.025  # h_scan.displacement_between_coins[0]
+        other_x = h_json['optimized_xy'][0] + 2*0.025  # h_scan.displacement_between_coins[1]
+        h_circ2 = plt.Circle((other_x, other_y), 0.05, color=color, fill=False)
+
+        h_ax.add_patch(h_circ1)
+        h_ax.add_patch(h_circ2)
+        nh_ax.add_patch(nh_circ1)
+        nh_ax.add_patch(nh_circ2)
 
     fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\two_spots_python.svg', dpi=fig.dpi)
     fig.show()
@@ -220,6 +282,7 @@ def show_high_order_loss(dir_path):
 
 
 def show_singles_not_enough(path):
+    # jjson = json.loads(open(r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\SinglesDontOptimizeCoin\2023_02_06_02_55_33_coin_not_optimized_no_spot_use_this\2023_02_06_02_55_33_config.json").read())
     sr = ScanResult()
     sr.loadfrom(path)
 
@@ -227,13 +290,56 @@ def show_singles_not_enough(path):
     im0 = axes[0].imshow(sr.single2s, cmap=COLORMAP, extent=sr.extent)
     add_scalebar(axes[0])
     cbar = fig.colorbar(im0, ax=axes[0])
+    cbar.ax.tick_params(labelsize=18)
+    cbar.formatter.set_powerlimits((0, 1))
+    # axes[0].plot(*jjson['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=18,
+    #                markeredgewidth=X_MARKER_EDGEWITDH)
 
     im1 = axes[1].imshow(sr.real_coins, cmap=COLORMAP, extent=sr.extent)
     add_scalebar(axes[1])
     cbar = fig.colorbar(im1, ax=axes[1])
+    cbar.ax.tick_params(labelsize=18)
+    # cbar.formatter.set_powerlimits((0, 1))
+    # axes[1].plot(*jjson['optimized_xy'], '+', markeredgecolor=X_MARKER_COLOR, markersize=18,
+    #                markeredgewidth=X_MARKER_EDGEWITDH)
 
     fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\singles_not_enough.svg', dpi=fig.dpi)
     fig.show()
+
+
+def show_optimization_to_SMF():
+    path = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\SMF coupling\2023_03_28_11_11_40_few_best_runs_to_SMF_with_polarizer\2023_03_28_11_11_40_4.pqoptimizer"
+    res = PianoPSOOptimizationResult()
+    res.loadfrom(path)
+
+    fig, ax = plt.subplots(figsize=(8, 5), constrained_layout=True)
+
+    costs = []
+    cost_stds = []
+    iterations = []
+    curr_best = 0
+
+    for i, c in enumerate(res.all_costs):
+        if np.abs(c) > curr_best:
+            curr_best = np.abs(res.all_costs[i])
+            costs.append(np.abs(res.all_costs[i]))
+            cost_stds.append(res.all_costs_std[i])
+            iterations.append(i)
+
+    ax.errorbar(iterations, costs, cost_stds, fmt='o--', label='current best', markersize=4)
+
+    random_average_std = res.all_costs[:res.n_for_average_cost].std()
+    ax.axhline(-res.random_average_cost, label='random average counts', color='g', linestyle='--')
+    ax.axhspan(-res.random_average_cost - random_average_std, -res.random_average_cost + random_average_std,
+               alpha=0.4, color='g')
+
+    ax.set_xlabel('iterations', size=16)
+    ax.set_ylabel('heralded ph/s', size=16)
+    ax.tick_params(axis='both', which='major', labelsize=12)
+    ax.legend(prop={'size': 12})
+    fig.show()
+    fig.savefig(r'G:\My Drive\Projects\Quantum Piano\Paper 1\Figures\SMF_optimization.png', dpi=fig.dpi)
+
 
 ############### optimization ###############
 path_not_heralded = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Not Heralded\2022_12_27_15_52_37_for_optimization_integration_8s_all'
@@ -261,9 +367,13 @@ HERALDED_PATH_FORMAT = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Heralde
 TWO_SPOTS_HEREALDED_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Two Spots\Heralded\2023_01_04_20_15_36_best_double_spot_2'
 TWO_SPOTS_NOT_HEREALDED_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Two Spots\Not Heralded\2023_01_08_11_51_22_double_spot_integration_2s_pretty_good'
 # show_two_spots(TWO_SPOTS_HEREALDED_PATH, TWO_SPOTS_NOT_HEREALDED_PATH)
+show_two_spots_new(TWO_SPOTS_HEREALDED_PATH, TWO_SPOTS_NOT_HEREALDED_PATH)
 
 HIGH_ORDDER_LOSS_PATH = r'G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\SinglesWithAndWithoutPiano'
-show_high_order_loss(HIGH_ORDDER_LOSS_PATH)
+# show_high_order_loss(HIGH_ORDDER_LOSS_PATH)
 
 SINGLES_NOT_ENOUGH_PATH = r"G:\My Drive\Projects\Quantum Piano\Paper 1\Data\Supplementary\SinglesDontOptimizeCoin\2023_02_06_02_55_33_coin_not_optimized_no_spot_use_this\2023_02_06_02_55_33_optimized.scan"
-show_singles_not_enough(SINGLES_NOT_ENOUGH_PATH)
+# show_singles_not_enough(SINGLES_NOT_ENOUGH_PATH)
+
+# show_optimization_to_SMF()
+plt.show()

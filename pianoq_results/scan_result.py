@@ -31,14 +31,15 @@ class ScanResult(object):
         if self.path is not None:
             self.loadfrom(self.path)
 
-    def show(self, show_singles=False, title='', remove_accidentals=True) -> typing.Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]:
+    def show(self, show_singles=False, title='', remove_accidentals=True, ax=None) -> typing.Tuple[matplotlib.figure.Figure, matplotlib.axes.Axes]:
         self.reload()
         if remove_accidentals:
             coin = self.coincidences - self.accidentals
         else:
             coin = self.coincidences
 
-        fig, ax = plt.subplots()
+        if ax is None:
+            fig, ax = plt.subplots()
         if remove_accidentals:
             rem_acc = 'no accidentals'
         else:
@@ -48,7 +49,7 @@ class ScanResult(object):
                       f'max std: {np.sqrt(self.accidentals.max() * self.integration_time) / self.integration_time :.0f}')
         my_mesh(self.X, self.Y, coin, ax)
         ax.invert_xaxis()
-        fig.show()
+        ax.figure.show()
 
         if show_singles:
             fig, axes = plt.subplots(1, 2)
@@ -60,7 +61,7 @@ class ScanResult(object):
             axes[1].set_title(f'Single counts 2 {title}')
             fig.show()
 
-        return fig, ax
+        return ax.figure, ax
 
     @property
     def real_coins(self):

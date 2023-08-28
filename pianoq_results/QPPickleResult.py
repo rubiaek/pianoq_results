@@ -20,7 +20,8 @@ class QPPickleResult(object):
             obj = pickle.load(f)
             self.__dict__.update(obj.__dict__)
             self.__class__ = obj.__class__
-        self.path = path
+
+        self.path = path  # important for it to be after the dict update
 
     def reload(self):
         if self.path:
