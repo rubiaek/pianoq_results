@@ -1,3 +1,4 @@
+import re
 import glob
 import json
 import SLMlayout
@@ -155,6 +156,7 @@ class KlyshkoResult(object):
         im = ax.imshow(phase, cmap='gray')
         fig.colorbar(im, ax=ax)
         fig.show()
+        return phase
 
     @property
     def efficiency_diode(self):
@@ -192,25 +194,62 @@ class KlyshkoResult(object):
         print(f'Diode efficiency: {self.efficiency_diode}')
         print(f'SPDC efficiency: {self.efficiency_SPDC}')
 
+    def reload(self):
+        self.loadfrom(self.dir_path)
+
 
 def show_speckle_comparison(dir_path, title):
-    fig, axes = plt.subplots(1, 3)
+    fig, axes = plt.subplots(1, 3, figsize=(11, 3))
+    # phase mask
     diffuser_path = glob.glob(f'{dir_path}\\*{title}*npz')[0]
     phase_mask = np.load(diffuser_path)['diffuser']
     imm = axes[0].imshow(phase_mask, cmap='gray')
     fig.colorbar(imm, ax=axes[0])
     axes[0].set_title('diffuser phase')
 
+    # Diode
     diode_path = glob.glob(f'{dir_path}\\*{title}*fits')[0]
     diode_im = FITSImage(diode_path)
     imm = axes[1].imshow(diode_im.image)
     fig.colorbar(imm, ax=axes[1])
     axes[1].set_title('diode speckle')
 
+    # SPDC scan
     SPDC_path = glob.glob(f'{dir_path}\\*{title}*scan')[0]
     scan = ScanResult(SPDC_path)
     my_mesh(scan.X, scan.Y, scan.real_coins, axes[2])
     axes[2].invert_xaxis()
     axes[2].set_title('SPDC speckle')
+
+    # diode limits
+    diode_before_path = glob.glob(f'{dir_path}\\*normal*fits')[0]
+    diode_before_im = FITSImage(diode_path)
+    A = diode_before_im.image
+    ind_row, ind_col = np.unravel_index(np.argmax(A, axis=None), A.shape)
+    X = scan.X
+    Y = scan.Y
+    pix_size = diode_before_im.pix_size
+    X_pixs = (X[-1] - X[0])*1e-3 / pix_size
+    Y_pixs = (Y[-1] - Y[0]) * 1e-3 / pix_size
+    axes[1].set_xlim(left=ind_col - X_pixs/2, right=ind_col + X_pixs/2)
+    axes[1].set_ylim(bottom=ind_row - Y_pixs/2, top=ind_row + Y_pixs/2)
+
+    fig.show()
+
+
+def show_memory(dir_path, show_ds=(50, 150, 250), classic=False):
+    if classic:
+        paths = glob.glob(f'{dir_path}\\*d=*um.fits')
+    else:
+        paths = glob.glob(f'{dir_path}\\*d=*um.scan')
+    all_ds = np.array([re.findall('.*d=(.*)um', path)[0] for path in paths]).astype(int)
+
+    fig, axes = plt.subplots(1, len(show_ds), figsize=(len(show_ds)*3.5, 3))
+    for i in range(len(show_ds)):
+        ind = np.where(all_ds == show_ds[i])
+        scan = ScanResult(paths[ind])
+        my_mesh(scan.X, scan.Y, scan.real_coins, axes[i])
+        axes[i].invert_xaxis()
+        axes[i].set_title(f'd = {show_ds[i]}')
 
     fig.show()
