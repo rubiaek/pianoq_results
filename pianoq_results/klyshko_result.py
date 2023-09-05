@@ -1,3 +1,4 @@
+import re
 import glob
 import json
 import SLMlayout
@@ -155,6 +156,7 @@ class KlyshkoResult(object):
         im = ax.imshow(phase, cmap='gray')
         fig.colorbar(im, ax=ax)
         fig.show()
+        return phase
 
     @property
     def efficiency_diode(self):
@@ -184,10 +186,16 @@ class KlyshkoResult(object):
         return self.SPDC_optimized.real_coins.max() / speckles_coins.mean()
 
     def print(self):
+        print('#########################')
+        print(f'comment: {self.comment}')
+        print('#########################')
         print(f'Diode enhancement: {self.enhancement_diode}')
         print(f'SPDC enhancement: {self.enhancement_SPDC}')
         print(f'Diode efficiency: {self.efficiency_diode}')
         print(f'SPDC efficiency: {self.efficiency_SPDC}')
+
+    def reload(self):
+        self.loadfrom(self.dir_path)
 
 
 def show_speckle_comparison(dir_path, title):
@@ -225,5 +233,36 @@ def show_speckle_comparison(dir_path, title):
     Y_pixs = (Y[-1] - Y[0]) * 1e-3 / pix_size
     axes[1].set_xlim(left=ind_col - X_pixs/2, right=ind_col + X_pixs/2)
     axes[1].set_ylim(bottom=ind_row - Y_pixs/2, top=ind_row + Y_pixs/2)
+
+    fig.show()
+
+
+def show_memory(dir_path, show_ds=(50, 150, 250), classic=False):
+    if classic:
+        paths = glob.glob(f'{dir_path}\\*d=*um.fits')
+    else:
+        paths = glob.glob(f'{dir_path}\\*d=*um.scan')
+    all_ds = np.array([re.findall('.*d=(.*)um', path)[0] for path in paths]).astype(int)
+
+    fig, axes = plt.subplots(1, len(show_ds), figsize=(len(show_ds)*3.5, 3), constrained_layout=True)
+    for i in range(len(show_ds)):
+        ind = np.where(all_ds == show_ds[i])[0][0]
+        if not classic:
+            scan = ScanResult(paths[ind])
+            my_mesh(scan.X, scan.Y, scan.real_coins, axes[i])
+            axes[i].invert_xaxis()
+        else:
+            im = FITSImage(paths[ind])
+            imm = axes[i].imshow(im.image)
+            ind_row, ind_col = np.unravel_index(np.argmax(im.image, axis=None), im.image.shape)
+            X_pixs = 266
+            Y_pixs = 266
+            axes[i].set_xlim(left=ind_col - X_pixs / 2, right=ind_col + X_pixs / 2)
+            axes[i].set_ylim(bottom=ind_row - Y_pixs / 2, top=ind_row + Y_pixs / 2)
+            fig.colorbar(imm, ax=axes[i])
+
+        axes[i].set_title(f'd = {show_ds[i]}')
+
+    fig.suptitle(f'classic = {classic}')
 
     fig.show()
