@@ -37,7 +37,7 @@ class VimbaImage(object):
             self.path = data.get('path', None).item()
             self.exposure_time = data.get('exposure_time', None).item()
             self.timestamp = data.get('timestamp', None).item()
-            print('new image')
+            # print('new image')
         except Exception:
             print("old image")
 
