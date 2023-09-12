@@ -29,7 +29,7 @@ class KlyshkoResult(object):
     def loadfrom(self, dir_path):
         self.dir_path = dir_path
         self.diode_before = self._load_fits('diode_no_diffuser')
-        self.diode_speckles = self._load_fits('diode_speckle')
+        self.diode_speckles = self._load_fits('diode_speckles')
         self.diode_optimized = self._load_fits('diode_optimized')
         self.diode_dark = self._load_fits('dark')
 
@@ -54,6 +54,10 @@ class KlyshkoResult(object):
             im.image = np.zeros((800, 800))
             return im
         elif len(paths) == 1:
+            return FITSImage(paths[0])
+        elif len(paths) == 2:
+            print(f'####### Got two paths: {paths} #########')
+            print('Using first one')
             return FITSImage(paths[0])
         else:
             raise Exception("Why two paths the same? ")
