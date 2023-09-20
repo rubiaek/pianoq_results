@@ -58,7 +58,7 @@ class KlyshkoResult(object):
         elif len(paths) == 2:
             print(f'####### Got two paths: {paths} #########')
             print('Using first one')
-            return FITSImage(paths[0])
+            return FITSImage(sorted(paths)[0])
         else:
             raise Exception("Why two paths the same? ")
 
