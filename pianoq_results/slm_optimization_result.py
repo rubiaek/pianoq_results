@@ -39,6 +39,7 @@ class SLMOptimizationResult(QPPickleResult):
         ax.plot(self.costs)
         ax.set_xlabel("Iterations")
         ax.set_ylabel("Power (Arb. units)")
+        fig.show()
         return fig, ax
 
     @property
