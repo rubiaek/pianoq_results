@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 from pianoq_results.klyshko_result import KlyshkoResult, show_memory
 from pianoq_results.scan_result import ScanResult
 from pianoq_results.fits_image import FITSImage
@@ -47,11 +48,26 @@ def similar_speckles():
     fig.show()
 
 
+def big_singles():
+    scan = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Off axis\2023_12_06_08_39_07_0a_wide_scan.scan")
+    sample_scan_here = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Off axis\2023_12_06_09_56_13_1a_init_focus_here.scan")
+    sample_scan_there = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Off axis\2023_12_06_10_25_56_1a_init_focus_there.scan")
+    fig, ax = plt.subplots()
+    ax.imshow(scan.single2s)
+    rect_here = Rectangle((sample_scan_here.Y[0], sample_scan_here.X[0]),
+                          abs(sample_scan_here.Y[-1] - sample_scan_here.Y[0]),
+                          abs(sample_scan_here.X[-1] - sample_scan_here.X[0]),
+                          facecolor="grey", ec='k', lw=2)
+    ax.add_patch(rect_here)
+    fig.show()
+
+
 def main():
     optimization()
     thick()
     memory()
     similar_speckles()
+    big_singles()
 
 
 if __name__ == '__main__':
