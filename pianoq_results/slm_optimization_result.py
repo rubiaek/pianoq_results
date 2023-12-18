@@ -42,6 +42,17 @@ class SLMOptimizationResult(QPPickleResult):
         fig.show()
         return fig, ax
 
+    def show_before_after(self):
+        if self.cost_witnesses:
+            fig, axes = plt.subplots(1, 2)
+            axes[0].imshow(self.cost_witnesses[0])
+            axes[1].imshow(self.cost_witnesses[-1])
+            if isinstance(self.roi, (list, tuple)):
+                pass # TODO: paint squares around cots region
+            fig.show()
+        else:
+            print('no pictures')
+
     @property
     def best_phase_mask(self):
         ind = np.argmax(self.costs)
