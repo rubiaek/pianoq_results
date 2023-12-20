@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 from pianoq_results.klyshko_result import KlyshkoResult, show_memory
 from pianoq_results.scan_result import ScanResult
@@ -41,11 +42,39 @@ def similar_speckles():
     fig.show()
 
 
+def two_spots():
+    dir_path = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Two spots\Try2_good\try2'
+    fig, axes = plt.subplots(2, 2)
+    im_speckles = FITSImage(dir_path + '\\2023_12_18_11_21_56_speckles.fits')
+    im_fixed = FITSImage(dir_path + '\\2023_12_18_14_22_57_optimized_two_spots_cell_size=20.fits')
+    scan_speckles = ScanResult(dir_path + '\\2023_12_18_15_14_31_speckles_also_9s_integration.scan')
+    scan_fixed = ScanResult(dir_path + '\\2023_12_18_14_26_59_optimized_two_spots_longer_again_pretty_good.scan')
+
+    Dx = np.abs(scan_speckles.X[-1] - scan_speckles.X[0]) * 1e-3  # m
+    Dy = np.abs(scan_speckles.Y[-1] - scan_speckles.Y[0]) * 1e-3  # m
+    pixs_X = Dx / im_fixed.pix_size
+    pixs_Y = Dy / im_fixed.pix_size
+
+    # 255, 250 is magic, this is the middle between both spots. Can probably find it using center of mass or something
+    mask = np.index_exp[int(255 - pixs_X//2) : int(255 + pixs_X//2), int(250 - pixs_Y//2): int(250 + pixs_Y//2)]
+
+    imm = axes[0, 0].imshow(im_speckles.image[mask])
+    fig.colorbar(imm, ax=axes[0, 0])
+    imm = axes[1, 0].imshow(im_fixed.image[mask])
+    fig.colorbar(imm, ax=axes[1, 0])
+    imm = axes[0, 1].imshow(scan_speckles.real_coins.T)
+    fig.colorbar(imm, ax=axes[0, 1])
+    imm = axes[1, 1].imshow(scan_fixed.real_coins.T)
+    fig.colorbar(imm, ax=axes[1, 1])
+    fig.show()
+
+
 def main():
     # optimization()
     # thick()
-    memory()
+    # memory()
     # similar_speckles()
+    two_spots()
 
 
 if __name__ == '__main__':
