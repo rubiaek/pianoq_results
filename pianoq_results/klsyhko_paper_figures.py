@@ -28,18 +28,40 @@ def optimization():
 
 
 def similar_speckles():
+    DIODE_PATH1 = r"G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Speckles same\2023_08_21_10_19_52_diode_speckles.fits"
+    SPDC_PATH1 = r"G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Speckles same\2023_08_21_11_27_52_scan_trying_Klyshko_1_diffuser_slm_optimized.scan"
+
     print('one 0.25 deg diffuser I think')
     fig, axes = plt.subplots(1, 2, constrained_layout=True, figsize=(7.5, 2.5))
-    diode = FITSImage(r"G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Speckles same\2023_08_21_10_19_52_diode_speckles.fits")
+    diode = FITSImage(DIODE_PATH1)
     imm = axes[0].imshow(diode.image)
     axes[0].set_xlim(left=170, right=420)
     axes[0].set_ylim(top=120, bottom=370)
 
     fig.colorbar(imm, ax=axes[0])
-    SPDC = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Speckles same\2023_08_21_11_27_52_scan_trying_Klyshko_1_diffuser_slm_optimized.scan")
+    SPDC = ScanResult(SPDC_PATH1)
     my_mesh(SPDC.X, SPDC.Y, SPDC.real_coins, axes[1])
     axes[1].invert_xaxis()
     fig.show()
+
+
+def similar_speckles2():
+    DIODE_PATH1 = r"G:\My Drive\Projects\Klyshko Optimization\Results\same_speckle\try3_good\2023_12_20_11_52_31_speckles4.fits"
+    SPDC_PATH1 = r"G:\My Drive\Projects\Klyshko Optimization\Results\same_speckle\try3_good\2023_12_20_13_11_18_speckles4_two_photon_high_res_again.scan"
+
+    print('one 0.25 deg diffuser I think')
+    fig, axes = plt.subplots(1, 2, constrained_layout=True, figsize=(7.5, 2.5))
+    diode = FITSImage(DIODE_PATH1)
+    imm = axes[0].imshow(np.fliplr(np.rot90(diode.image)))
+    # axes[0].set_xlim(left=170, right=420)
+    # axes[0].set_ylim(top=120, bottom=370)
+
+    fig.colorbar(imm, ax=axes[0])
+    SPDC = ScanResult(SPDC_PATH1)
+    my_mesh(SPDC.X, SPDC.Y, SPDC.real_coins, axes[1])
+    axes[1].invert_xaxis()
+    fig.show()
+
 
 
 def two_spots():
@@ -73,8 +95,8 @@ def main():
     # optimization()
     # thick()
     # memory()
-    # similar_speckles()
-    two_spots()
+    similar_speckles()
+    # two_spots()
 
 
 if __name__ == '__main__':
