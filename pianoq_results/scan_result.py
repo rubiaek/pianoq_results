@@ -68,6 +68,10 @@ class ScanResult(object):
         return self.coincidences - self.accidentals
 
     @property
+    def real_coins_std(self):
+        return np.sqrt(self.real_coins) / np.sqrt(self.integration_time)
+
+    @property
     def real_coins2(self):
         return self.coincidences2 - self.accidentals2
 
