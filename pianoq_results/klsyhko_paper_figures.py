@@ -1,4 +1,5 @@
 import numpy as np
+import datetime
 import matplotlib.pyplot as plt
 from pianoq_results.klyshko_result import KlyshkoResult, show_memory
 from pianoq_results.scan_result import ScanResult
@@ -46,22 +47,47 @@ def similar_speckles():
 
 
 def similar_speckles2():
-    DIODE_PATH1 = r"G:\My Drive\Projects\Klyshko Optimization\Results\same_speckle\try3_good\2023_12_20_11_52_31_speckles4.fits"
-    SPDC_PATH1 = r"G:\My Drive\Projects\Klyshko Optimization\Results\same_speckle\try3_good\2023_12_20_13_11_18_speckles4_two_photon_high_res_again.scan"
+    DIODE_PATH1 = r"G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Speckles same\try3_good\2023_12_20_11_52_31_speckles4.fits"
+    SPDC_PATH1 = r"G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Speckles same\try3_good\2023_12_20_13_11_18_speckles4_two_photon_high_res_again.scan"
+    POWER_METER_PATH = r"G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Speckles same\try3_good\2023_12_20_12_00_55_speckles4_power_meter.scan"
 
     print('one 0.25 deg diffuser I think')
-    fig, axes = plt.subplots(1, 2, constrained_layout=True, figsize=(7.5, 2.5))
     diode = FITSImage(DIODE_PATH1)
-    imm = axes[0].imshow(np.fliplr(np.rot90(diode.image)))
-    # axes[0].set_xlim(left=170, right=420)
-    # axes[0].set_ylim(top=120, bottom=370)
-
-    fig.colorbar(imm, ax=axes[0])
     SPDC = ScanResult(SPDC_PATH1)
-    my_mesh(SPDC.X, SPDC.Y, SPDC.real_coins, axes[1])
-    axes[1].invert_xaxis()
-    fig.show()
+    PM = ScanResult(POWER_METER_PATH)
 
+    fig1, ax = plt.subplots()
+    imm = ax.imshow(np.fliplr(np.rot90(diode.image)))
+    pixels = (SPDC.X[-1] - SPDC.X[0])*1e-3 // diode.pix_size
+    start_x = 220
+    start_y = 195
+    ax.set_xlim(left=start_x, right=start_x+pixels)
+    ax.set_ylim(top=start_y, bottom=start_y+pixels)
+    ax.axis('off')
+    # fig1.colorbar(imm, ax=ax)
+    fig1.show()
+
+    timestamp = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')
+    fig1.savefig(rf'G:\My Drive\Projects\Klyshko Optimization\Paper1\Figures\{timestamp}_same_speckles_diode_cam.svg', dpi=fig1.dpi)
+
+    fig2, ax = plt.subplots()
+    ax.imshow(SPDC.real_coins)
+    # my_mesh(SPDC.X, SPDC.Y, SPDC.real_coins, ax)
+    ax.invert_xaxis()
+    ax.axis('off')
+    fig2.show()
+    fig2.savefig(rf'G:\My Drive\Projects\Klyshko Optimization\Paper1\Figures\{timestamp}_same_speckles_SPDC.svg',
+                 dpi=fig2.dpi)
+
+    fig3, ax = plt.subplots()
+    ax.imshow(PM.real_coins)
+    ax.invert_xaxis()
+    ax.axis('off')
+    fig3.show()
+    fig3.savefig(rf'G:\My Drive\Projects\Klyshko Optimization\Paper1\Figures\{timestamp}_same_diode_power_meter.svg',
+                 dpi=fig3.dpi)
+
+    # fig.savefig()
 
 
 def two_spots():
@@ -95,7 +121,7 @@ def main():
     # optimization()
     # thick()
     # memory()
-    similar_speckles()
+    similar_speckles2()
     # two_spots()
 
 
