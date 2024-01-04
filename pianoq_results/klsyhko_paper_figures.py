@@ -1,10 +1,15 @@
+import re
+from uncertainties import unumpy
+import glob
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
+from scipy.optimize import curve_fit
 from pianoq_results.klyshko_result import KlyshkoResult, show_memory
 from pianoq_results.scan_result import ScanResult
 from pianoq_results.fits_image import FITSImage
 from pianoq_results.misc import my_mesh
+
 
 # PATH_OPTIMIZATION2 = r'G:\My Drive\Projects\Klyshko Optimization\Results\Good\2023_08_24_14_54_48_klyshko_two_diffusers_other_0.25_0.5_power_meter_continuous_hex_in_place'
 # PATH_THICK =        r'G:\My Drive\Projects\Klyshko Optimization\Results\Good\2023_08_28_08_10_25_klyshko_thick_diffuser_0.25_and_0.25_0.16_power_meter_continuous_hex'
@@ -14,7 +19,7 @@ PATH_OPTIMIZATION = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\2023
 PATH_THICK_MEMORY = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\2023_09_20_09_52_22_klyshko_very_thick_with_memory_meas\Memory'
 
 
-def memory():
+def memory_old():
     show_memory(PATH_THICK_MEMORY, show_ds=(50, 60, 70, 80, 90, 100, 150, 200), classic=True)
     show_memory(PATH_THICK_MEMORY, show_ds=(50, 60, 70, 80, 90, 100), classic=False)
 
@@ -117,12 +122,148 @@ def two_spots():
     fig.show()
 
 
+def get_memory_classical3(dir_path, l=4):
+    paths = glob.glob(f'{dir_path}\\*d=*.fits')
+    dark_im = FITSImage(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try6\2024_01_03_11_26_52_dark.fits")
+    all_ds = np.array([re.findall('.*d=(.*)\.fits', path)[0] for path in paths]).astype(float)
+    all_ds, paths = list(zip(*sorted(zip(all_ds, paths), key=lambda pair: pair[0], reverse=True)))
+    all_ds = np.array(all_ds, dtype=float)
+    all_ds *= 10
+    ims = [FITSImage(path) for path in paths]
+    max_speckles = []
+
+    for i, im in enumerate(ims):
+        image = im.image.astype(float) - dark_im.image.astype(float)
+        image[image < 0] = 0
+        # TODO: have some moving window around expected focus that you choose the max pixel from within it, similar to SPDC
+        # TODO: though there is no real need - it happens automatically
+        ind_row, ind_col = np.unravel_index(np.argmax(image, axis=None), image.shape)
+        # altogether 9 pixels, which comes out ~101um
+        l = 4
+        max_speckle = image[ind_row - l:ind_row + l + 1, ind_col - l:ind_col + l + 1].sum()
+        # in SPDC we have 50um fibers, and counting 3 pixels that are 25um apart, so we count the inner 50um twice
+        # 5 pixels is ~56um
+        l = 2
+        inner_50_um = image[ind_row - l:ind_row + l + 1, ind_col - l:ind_col + l + 1].sum()
+        max_speckles.append(max_speckle+inner_50_um)
+
+    dx = all_ds[0] - all_ds
+
+    return dx, np.array(max_speckles) / max_speckles[0]
+
+
+def get_memory_SPDC3(dir_path, l=1):
+    paths = glob.glob(f'{dir_path}\\*d=*.scan')
+    all_ds = np.array([re.findall('.*d=(.*)\.scan', path)[0] for path in paths]).astype(float)
+    all_ds, paths = list(zip(*sorted(zip(all_ds, paths), key=lambda pair: pair[0], reverse=True)))
+    all_ds = np.array(all_ds, dtype=float)
+    all_ds *= 10
+    scans = [ScanResult(path) for path in paths]
+    max_speckles = []
+    max_speckle_stds = []
+    for i, scan in enumerate(scans):
+        ind_row, ind_col = np.unravel_index(np.argmax(scan.real_coins, axis=None), scan.real_coins.shape)
+        # altogether 3X3 pixels, which comes out ~75umX75um
+        coin_area = scan.real_coins[ind_row-l:ind_row+l+1, ind_col-l:ind_col+l+1]
+        coin_std_area = scan.real_coins_std[ind_row-l:ind_row+l+1, ind_col-l:ind_col+l+1]
+        u_max_speckle = unumpy.uarray(coin_area, coin_std_area).sum()
+        max_speckle = u_max_speckle.nominal_value
+        max_speckle_std = u_max_speckle.std_dev
+        max_speckles.append(max_speckle)
+        max_speckle_stds.append(max_speckle_std)
+
+    return all_ds[0] - all_ds, np.array(max_speckles) / max_speckles[0], np.array(max_speckle_stds, dtype=float) / max_speckles[0]
+
+
+def mem_func(theta, d_theta):
+    return ( (theta/d_theta) / (1e-17 + np.sinh(theta/d_theta)) )**2
+
+
+def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1):
+    fig, ax = plt.subplots(figsize=(8, 4), constrained_layout=True)
+    diode_ds, diode_corrs = get_memory_classical3(dir_path_classical, l=l1)
+    SPDC_ds, SPDC_corrs, SPDC_corr_stds = get_memory_SPDC3(dir_path_SPDC, l=l2)
+
+    diode_thetas = diode_ds * 10 / 100e3  # 10x magnification to SMF, and 100mm lens
+    SPDC_thetas = SPDC_ds * 10 / 100e3  # 10x magnification to SMF, and 100mm lens
+    theta_err = 2*10/100e3  # 20 um in manual micrometer, and 100mm lens
+
+    ax.errorbar(SPDC_thetas, SPDC_corrs, xerr=theta_err, yerr=SPDC_corr_stds, fmt='o', label='SPDC', color='r')
+    ax.errorbar(diode_thetas, diode_corrs, xerr=theta_err, fmt='*', label='diode', color='b')
+    dummy_theta = np.linspace(1e-6, 0.007, 1000)
+    # ax.plot(dummy_x, mem_func(dummy_x, d_x), '-', label='analytical')
+    popt, pcov = curve_fit(mem_func, diode_thetas, diode_corrs, p0=0.02, bounds=(1e-6, 2))
+    # *1e3 for mrd instead of rad
+    ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='diode fit', color='b')
+    print(*popt)
+    popt, pcov = curve_fit(mem_func, SPDC_thetas, SPDC_corrs, p0=0.02, bounds=(1e-6, 2))
+    # *1e3 for mrd instead of rad
+    ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='SPDC fit', color='r')
+    print(*popt)
+    ax.set_xlabel(r'$\Delta\theta$ (mrd)', size=16)
+    ax.set_ylabel('normalized focus intensity', size=16)
+    ax.tick_params(axis='both', which='major', labelsize=12)
+    fig.legend()  # bbox_to_anchor=(0.95, 0.95))
+    fig.show()
+    timestamp = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')
+    fig.savefig(rf'G:\My Drive\Projects\Klyshko Optimization\Paper1\Figures\{timestamp}_memory_curves.svg',
+                 dpi=fig.dpi)
+
+
+def memory(d_x=22, l1=4, l2=1):
+    dir_path_classical = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Memory\try6\diode_memory'
+    dir_path_SPDC = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Memory\try6\SPDC_memory'
+    show_memories3(dir_path_classical, dir_path_SPDC, d_x=d_x, l1=l1, l2=l2)
+
+
+def reoptimization():
+    d7 = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_12_14_58_optimized_d=7.scan")
+    d5_5 = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_12_51_30_optimized_d=5.5.scan")
+    d2 = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_13_19_30_optimized_d=2.scan")
+    d2_reoptimized = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_14_58_10_re_optimizedat_d=2_d=2.scan")
+
+    fig, axes = plt.subplots(1, 4, figsize=(7, 2.5), constrained_layout=True)
+    dx = (d7.X[1] - d7.X[0]) / 2
+    dy = (d7.Y[1] - d7.Y[0]) / 2
+    # note the switch here X<->Y because I plot the transpose
+    redundant_left = 0
+    extent = (d7.Y[-redundant_left] + dx, d7.Y[0] - dx, d7.X[0] - dy, d7.X[-1] + dy)
+    extent=None
+
+    max_V = max(d7.real_coins.max(), d5_5.real_coins.max(), d2.real_coins.max())  # TODO: also of d2_reopt
+    max_V = None
+
+
+    imm = axes[0].imshow(d7.real_coins[:, redundant_left:], extent=extent, vmax=max_V)
+    axes[0].invert_xaxis()
+    fig.colorbar(imm, ax=axes[0])
+
+    imm = axes[1].imshow(d5_5.real_coins[:, redundant_left:], extent=extent, vmax=max_V)
+    axes[1].invert_xaxis()
+    axes[1].tick_params(axis='y', left=False, labelleft=False)
+    fig.colorbar(imm, ax=axes[1])
+
+    imm = axes[2].imshow(d2.real_coins[:, redundant_left:], extent=extent, vmax=max_V)
+    axes[2].invert_xaxis()
+    axes[2].tick_params(axis='y', left=False, labelleft=False)
+    fig.colorbar(imm, ax=axes[2])
+
+    imm = axes[3].imshow(d2_reoptimized.real_coins[:, redundant_left:], extent=extent, vmax=max_V)
+    axes[3].invert_xaxis()
+    axes[3].tick_params(axis='y', left=False, labelleft=False)
+    fig.colorbar(imm, ax=axes[3])
+
+    fig.show()
+
+
 def main():
     # optimization()
     # thick()
     # memory()
-    similar_speckles2()
+    # similar_speckles2()
     # two_spots()
+    # memory()
+    reoptimization()
 
 
 if __name__ == '__main__':
