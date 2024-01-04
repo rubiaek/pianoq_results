@@ -254,6 +254,9 @@ def reoptimization():
     fig.colorbar(imm, ax=axes[3])
 
     fig.show()
+    timestamp = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')
+    fig.savefig(rf'G:\My Drive\Projects\Klyshko Optimization\Paper1\Figures\{timestamp}_reoptimization.svg',
+                 dpi=fig.dpi)
 
 
 def main():
