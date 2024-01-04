@@ -220,7 +220,7 @@ def reoptimization():
     d7 = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_12_14_58_optimized_d=7.scan")
     d5_5 = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_12_51_30_optimized_d=5.5.scan")
     d2 = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_13_19_30_optimized_d=2.scan")
-    d2_reoptimized = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_14_58_10_re_optimizedat_d=2_d=2.scan")
+    d2_reoptimized = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_16_19_41_re_optimizedat_d=2_again_d=2.scan")
 
     fig, axes = plt.subplots(1, 4, figsize=(7, 2.5), constrained_layout=True)
     dx = (d7.X[1] - d7.X[0]) / 2
