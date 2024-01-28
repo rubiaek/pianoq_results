@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import astropy.coordinates.funcs as coord
 from colorsys import hls_to_rgb
 from scipy import ndimage
-import qutip
+# import qutip
 
 import traceback
 

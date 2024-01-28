@@ -1,5 +1,6 @@
 import re
 from uncertainties import unumpy
+from scipy.signal import convolve2d
 import glob
 import numpy as np
 import datetime
@@ -157,7 +158,7 @@ def get_memory_SPDC3(dir_path, l=1):
     all_ds = np.array([re.findall('.*d=(.*)\.scan', path)[0] for path in paths]).astype(float)
     all_ds, paths = list(zip(*sorted(zip(all_ds, paths), key=lambda pair: pair[0], reverse=True)))
     all_ds = np.array(all_ds, dtype=float)
-    all_ds *= 10
+    all_ds *= 10  # the filename says 6 and 7, which is in practice 60 and 70 um
     scans = [ScanResult(path) for path in paths]
     max_speckles = []
     max_speckle_stds = []
@@ -179,27 +180,37 @@ def mem_func(theta, d_theta):
     return ( (theta/d_theta) / (1e-17 + np.sinh(theta/d_theta)) )**2
 
 
-def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1):
+def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_fit=True):
     fig, ax = plt.subplots(figsize=(8, 4), constrained_layout=True)
     diode_ds, diode_corrs = get_memory_classical3(dir_path_classical, l=l1)
     SPDC_ds, SPDC_corrs, SPDC_corr_stds = get_memory_SPDC3(dir_path_SPDC, l=l2)
 
-    diode_thetas = diode_ds * 10 / 100e3  # 10x magnification to SMF, and 100mm lens
-    SPDC_thetas = SPDC_ds * 10 / 100e3  # 10x magnification to SMF, and 100mm lens
-    theta_err = 2*10/100e3  # 20 um in manual micrometer, and 100mm lens
+    diode_thetas = diode_ds * 10 / 100e3  # 10x magnification to SMF, and 100mm lens (e3 for mm instead of um)
+    SPDC_thetas = SPDC_ds * 10 / 100e3  # 10x magnification to SMF, and 100mm lens (e3 for mm instead of um)
+    theta_err = 2*10/100e3  # 20 um in manual micrometer, and 100mm lens (e3 for mm instead of um)
 
-    ax.errorbar(SPDC_thetas, SPDC_corrs, xerr=theta_err, yerr=SPDC_corr_stds, fmt='o', label='SPDC', color='r')
-    ax.errorbar(diode_thetas, diode_corrs, xerr=theta_err, fmt='*', label='diode', color='b')
-    dummy_theta = np.linspace(1e-6, 0.007, 1000)
-    # ax.plot(dummy_x, mem_func(dummy_x, d_x), '-', label='analytical')
-    popt, pcov = curve_fit(mem_func, diode_thetas, diode_corrs, p0=0.02, bounds=(1e-6, 2))
-    # *1e3 for mrd instead of rad
-    ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='diode fit', color='b')
-    print(*popt)
-    popt, pcov = curve_fit(mem_func, SPDC_thetas, SPDC_corrs, p0=0.02, bounds=(1e-6, 2))
-    # *1e3 for mrd instead of rad
-    ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='SPDC fit', color='r')
-    print(*popt)
+    ax.errorbar(SPDC_thetas*1e3, SPDC_corrs, xerr=theta_err, yerr=SPDC_corr_stds, fmt='o', label='SPDC', color='r')
+    ax.errorbar(diode_thetas*1e3, diode_corrs, xerr=theta_err, fmt='*', label='diode', color='b')
+    if show_fit:
+        dummy_theta = np.linspace(1e-6, 0.007, 1000)
+        # ax.plot(dummy_x, mem_func(dummy_x, d_x), '-', label='analytical')
+        popt, pcov = curve_fit(mem_func, diode_thetas, diode_corrs, p0=0.02, bounds=(1e-6, 2))
+        # *1e3 for mrd instead of rad
+        ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='diode fit', color='b')
+        print(*popt)
+        popt, pcov = curve_fit(mem_func, SPDC_thetas, SPDC_corrs, p0=0.02, bounds=(1e-6, 2))
+        # *1e3 for mrd instead of rad
+        ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='SPDC fit', color='r')
+        print(*popt)
+
+    reoptimization_x = np.array([7, 5.5, 2, 2])
+    reoptimization_x = reoptimization_x[0] - reoptimization_x
+    reoptimization_x *= 10 * 10 / 100e3  # 10 for 6->60 um, than 10 for SMF magnification, and 100mm lens (e3 for mm instead of um)
+
+    reoptimization_y = np.array([120.21360481225001, 101.99433080050001, 37.6670910675, 89.29465100224999])
+    reoptimization_y /= reoptimization_y.max()
+    ax.plot(reoptimization_x*1e3, reoptimization_y, 'o', label='reoptimization', color='purple')
+
     ax.set_xlabel(r'$\Delta\theta$ (mrd)', size=16)
     ax.set_ylabel('normalized focus intensity', size=16)
     ax.tick_params(axis='both', which='major', labelsize=12)
@@ -216,7 +227,7 @@ def memory(d_x=22, l1=4, l2=1):
     show_memories3(dir_path_classical, dir_path_SPDC, d_x=d_x, l1=l1, l2=l2)
 
 
-def reoptimization():
+def reoptimization(smoothen=True, N=4):
     d7 = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_12_14_58_optimized_d=7.scan")
     d5_5 = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_12_51_30_optimized_d=5.5.scan")
     d2 = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_13_19_30_optimized_d=2.scan")
@@ -233,22 +244,59 @@ def reoptimization():
     max_V = max(d7.real_coins.max(), d5_5.real_coins.max(), d2.real_coins.max())  # TODO: also of d2_reopt
     max_V = None
 
+    ker = np.ones((2, 2)) / 4
+    if smoothen:
+        d7coin = convolve2d(d7.real_coins, ker, mode='same')
+        d5_5coin = convolve2d(d5_5.real_coins, ker, mode='same')
+        d2coin = convolve2d(d2.real_coins, ker, mode='same')
+        d2_re_coin = convolve2d(d2_reoptimized.real_coins, ker, mode='same')
+    else:
+        d7coin = d7.real_coins
+        d5_5coin = d5_5.real_coins
+        d2coin = d2.real_coins
+        d2_re_coin = d2_reoptimized.real_coins
 
-    imm = axes[0].imshow(d7.real_coins[:, redundant_left:], extent=extent, vmax=max_V)
+    if False:
+        print('sanity check for comparison with and without smoothing:')
+        print(f'{d7coin.sum()}')
+        print(f'{d5_5coin.sum()}')
+        print(f'{d2coin.sum()}')
+        print(f'{d2_re_coin.sum()}')
+    if False:
+        print('check what numbers come good for N highest values')
+        print(f'{sum(sorted(d7coin.flatten())[-N:])}')
+        print(f'{sum(sorted(d5_5coin.flatten())[-N:])}')
+        print(f'{sum(sorted(d2coin.flatten())[-N:])}')
+        print(f'{sum(sorted(d2_re_coin.flatten())[-N:])}')
+    if True:
+        def sum_around_highest(matrix):
+            max_index = np.unravel_index(np.argmax(matrix), matrix.shape)
+            neighbors_indices = [(i, j) for i in range(max_index[0] - 1, max_index[0] + 2) for j in
+                                 range(max_index[1] - 1, max_index[1] + 2) if
+                                 0 <= i < matrix.shape[0] and 0 <= j < matrix.shape[1]]
+            return np.sum([matrix[i, j] for i, j in neighbors_indices])
+        print('9 around max')
+        # TODO: add error bars (shot noise, with integration_time = 2s)
+        print(f'{sum_around_highest(d7coin)}')
+        print(f'{sum_around_highest(d5_5coin)}')
+        print(f'{sum_around_highest(d2coin)}')
+        print(f'{sum_around_highest(d2_re_coin)}')
+
+    imm = axes[0].imshow(d7coin[:, redundant_left:], extent=extent, vmax=max_V)
     axes[0].invert_xaxis()
     fig.colorbar(imm, ax=axes[0])
 
-    imm = axes[1].imshow(d5_5.real_coins[:, redundant_left:], extent=extent, vmax=max_V)
+    imm = axes[1].imshow(d5_5coin[:, redundant_left:], extent=extent, vmax=max_V)
     axes[1].invert_xaxis()
     axes[1].tick_params(axis='y', left=False, labelleft=False)
     fig.colorbar(imm, ax=axes[1])
 
-    imm = axes[2].imshow(d2.real_coins[:, redundant_left:], extent=extent, vmax=max_V)
+    imm = axes[2].imshow(d2coin[:, redundant_left:], extent=extent, vmax=max_V)
     axes[2].invert_xaxis()
     axes[2].tick_params(axis='y', left=False, labelleft=False)
     fig.colorbar(imm, ax=axes[2])
 
-    imm = axes[3].imshow(d2_reoptimized.real_coins[:, redundant_left:], extent=extent, vmax=max_V)
+    imm = axes[3].imshow(d2_re_coin[:, redundant_left:], extent=extent, vmax=max_V)
     axes[3].invert_xaxis()
     axes[3].tick_params(axis='y', left=False, labelleft=False)
     fig.colorbar(imm, ax=axes[3])
