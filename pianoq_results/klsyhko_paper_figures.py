@@ -209,7 +209,7 @@ def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_f
 
     reoptimization_y = np.array([120.21360481225001, 101.99433080050001, 37.6670910675, 89.29465100224999])
     reoptimization_y /= reoptimization_y.max()
-    ax.plot(reoptimization_x*1e3, reoptimization_y, 'o', label='reoptimization', color='purple')
+    ax.plot(reoptimization_x*1e3, reoptimization_y, 'v', label='reoptimization', color='purple')
 
     ax.set_xlabel(r'$\Delta\theta$ (mrd)', size=16)
     ax.set_ylabel('normalized focus intensity', size=16)
