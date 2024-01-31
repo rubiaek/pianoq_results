@@ -29,7 +29,9 @@ def optimization():
     res = KlyshkoResult()
     res.loadfrom(PATH_OPTIMIZATION)
     res.print()
-    res.show()
+    timestamp = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')
+    save_to = rf'G:\My Drive\Projects\Klyshko Optimization\Paper1\Figures\{timestamp}_optimization.svg'
+    res.show(xs=True, bare=True, save_to=save_to, norm_diode=True)
     # res.show_optimization_process()
     # res.show_best_phase()
 
@@ -96,9 +98,9 @@ def similar_speckles2():
     # fig.savefig()
 
 
-def two_spots():
+def two_spots(norm_diode=True):
     dir_path = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Two spots\Try2_good\try2'
-    fig, axes = plt.subplots(2, 2)
+    fig, axes = plt.subplots(2, 2, constrained_layout=True, figsize=(7, 4))
     im_speckles = FITSImage(dir_path + '\\2023_12_18_11_21_56_speckles.fits')
     im_fixed = FITSImage(dir_path + '\\2023_12_18_14_22_57_optimized_two_spots_cell_size=20.fits')
     scan_speckles = ScanResult(dir_path + '\\2023_12_18_15_14_31_speckles_also_9s_integration.scan')
@@ -112,14 +114,30 @@ def two_spots():
     # 255, 250 is magic, this is the middle between both spots. Can probably find it using center of mass or something
     mask = np.index_exp[int(255 - pixs_X//2) : int(255 + pixs_X//2), int(250 - pixs_Y//2): int(250 + pixs_Y//2)]
 
-    imm = axes[0, 0].imshow(im_speckles.image[mask])
+    classical_speckles = im_speckles.image[mask].astype(float)
+    classical_fixed = im_fixed.image[mask].astype(float)
+
+    if norm_diode:
+        mean_diode = classical_speckles.mean()
+        classical_speckles /= mean_diode
+        classical_fixed /= mean_diode
+
+    imm = axes[0, 0].imshow(classical_speckles)
     fig.colorbar(imm, ax=axes[0, 0])
-    imm = axes[1, 0].imshow(im_fixed.image[mask])
+    imm = axes[1, 0].imshow(classical_fixed)
     fig.colorbar(imm, ax=axes[1, 0])
     imm = axes[0, 1].imshow(scan_speckles.real_coins.T)
     fig.colorbar(imm, ax=axes[0, 1])
     imm = axes[1, 1].imshow(scan_fixed.real_coins.T)
     fig.colorbar(imm, ax=axes[1, 1])
+
+    axes[0, 0].tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
+    axes[1, 0].tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
+    axes[0, 1].tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
+    axes[1, 1].tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
+
+    timestamp = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')
+    fig.savefig(rf'G:\My Drive\Projects\Klyshko Optimization\Paper1\Figures\{timestamp}_two_spots.svg',dpi=fig.dpi)
     fig.show()
 
 
@@ -181,6 +199,8 @@ def mem_func(theta, d_theta):
 
 
 def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_fit=True):
+    from matplotlib.legend_handler import HandlerTuple
+
     fig, ax = plt.subplots(figsize=(8, 4), constrained_layout=True)
     diode_ds, diode_corrs = get_memory_classical3(dir_path_classical, l=l1)
     SPDC_ds, SPDC_corrs, SPDC_corr_stds = get_memory_SPDC3(dir_path_SPDC, l=l2)
@@ -189,32 +209,42 @@ def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_f
     SPDC_thetas = SPDC_ds * 10 / 100e3  # 10x magnification to SMF, and 100mm lens (e3 for mm instead of um)
     theta_err = 2*10/100e3  # 20 um in manual micrometer, and 100mm lens (e3 for mm instead of um)
 
-    ax.errorbar(SPDC_thetas*1e3, SPDC_corrs, xerr=theta_err, yerr=SPDC_corr_stds, fmt='o', label='SPDC', color='r')
-    ax.errorbar(diode_thetas*1e3, diode_corrs, xerr=theta_err, fmt='*', label='diode', color='b')
+    spdch = ax.errorbar(SPDC_thetas*1e3, SPDC_corrs, xerr=theta_err*1e3, yerr=SPDC_corr_stds, fmt='o', label='SPDC', color='mediumpurple')
+    diodeh = ax.errorbar(diode_thetas*1e3, diode_corrs, xerr=theta_err*1e3, fmt='*', label='diode', color='mediumseagreen')
+
     if show_fit:
         dummy_theta = np.linspace(1e-6, 0.007, 1000)
         # ax.plot(dummy_x, mem_func(dummy_x, d_x), '-', label='analytical')
         popt, pcov = curve_fit(mem_func, diode_thetas, diode_corrs, p0=0.02, bounds=(1e-6, 2))
         # *1e3 for mrd instead of rad
-        ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='diode fit', color='b')
+        fit1h, = ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='diode fit', color='mediumseagreen')
         print(*popt)
         popt, pcov = curve_fit(mem_func, SPDC_thetas, SPDC_corrs, p0=0.02, bounds=(1e-6, 2))
         # *1e3 for mrd instead of rad
-        ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='SPDC fit', color='r')
+        fit2h, = ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='SPDC fit', color='mediumpurple')
         print(*popt)
 
     reoptimization_x = np.array([7, 5.5, 2, 2])
     reoptimization_x = reoptimization_x[0] - reoptimization_x
     reoptimization_x *= 10 * 10 / 100e3  # 10 for 6->60 um, than 10 for SMF magnification, and 100mm lens (e3 for mm instead of um)
 
-    reoptimization_y = np.array([120.21360481225001, 101.99433080050001, 37.6670910675, 89.29465100224999])
+    # reoptimization_y = np.array([120.21360481225001, 101.99433080050001, 37.6670910675, 89.29465100224999])  # smoothen=True
+    reoptimization_y = np.array([121.349386243, 113.208764652, 44.194766541999996, 100.437913236])  # smoothen = False
     reoptimization_y /= reoptimization_y.max()
-    ax.plot(reoptimization_x*1e3, reoptimization_y, 'v', label='reoptimization', color='purple')
+    reoptimizationh, = ax.plot(reoptimization_x*1e3, reoptimization_y, 'v', label='reoptimization', color='purple', markersize=8)
 
     ax.set_xlabel(r'$\Delta\theta$ (mrd)', size=16)
     ax.set_ylabel('normalized focus intensity', size=16)
     ax.tick_params(axis='both', which='major', labelsize=12)
-    fig.legend()  # bbox_to_anchor=(0.95, 0.95))
+
+    if show_fit:
+        l = ax.legend([fit1h, fit2h, diodeh, (spdch, reoptimizationh)], ['diode fit', 'SPDC fit', 'diode','SPDC'],
+                       handler_map={tuple: HandlerTuple(ndivide=None)})
+    else:
+        l = ax.legend([diodeh, (spdch, reoptimizationh)], ['diode', 'SPDC'],
+                       handler_map={tuple: HandlerTuple(ndivide=None)})
+
+    # fig.legend()  # bbox_to_anchor=(0.95, 0.95))
     fig.show()
     timestamp = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')
     fig.savefig(rf'G:\My Drive\Projects\Klyshko Optimization\Paper1\Figures\{timestamp}_memory_curves.svg',
@@ -233,11 +263,12 @@ def reoptimization(smoothen=True, N=4):
     d2 = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_13_19_30_optimized_d=2.scan")
     d2_reoptimized = ScanResult(r"G:\My Drive\Projects\Klyshko Optimization\Results\Off_axis\try7\2024_01_04_16_19_41_re_optimizedat_d=2_again_d=2.scan")
 
-    fig, axes = plt.subplots(1, 4, figsize=(7, 2.5), constrained_layout=True)
+    fig, axes = plt.subplots(1, 4, figsize=(7, 2), constrained_layout=True)
     dx = (d7.X[1] - d7.X[0]) / 2
     dy = (d7.Y[1] - d7.Y[0]) / 2
     # note the switch here X<->Y because I plot the transpose
-    redundant_left = 0
+    redundant_left = 2
+    redundant_right = 6
     extent = (d7.Y[-redundant_left] + dx, d7.Y[0] - dx, d7.X[0] - dy, d7.X[-1] + dy)
     extent=None
 
@@ -282,23 +313,28 @@ def reoptimization(smoothen=True, N=4):
         print(f'{sum_around_highest(d2coin)}')
         print(f'{sum_around_highest(d2_re_coin)}')
 
-    imm = axes[0].imshow(d7coin[:, redundant_left:], extent=extent, vmax=max_V)
+    imm = axes[0].imshow(d7coin[redundant_left:-redundant_right, :], extent=extent, vmax=max_V)
     axes[0].invert_xaxis()
+    axes[0].tick_params(axis='y', left=False, labelleft=False)
+    axes[0].tick_params(axis='x', bottom=False, labelbottom=False)
     fig.colorbar(imm, ax=axes[0])
 
-    imm = axes[1].imshow(d5_5coin[:, redundant_left:], extent=extent, vmax=max_V)
+    imm = axes[1].imshow(d5_5coin[redundant_left:-redundant_right, :], extent=extent, vmax=max_V)
     axes[1].invert_xaxis()
     axes[1].tick_params(axis='y', left=False, labelleft=False)
+    axes[1].tick_params(axis='x', bottom=False, labelbottom=False)
     fig.colorbar(imm, ax=axes[1])
 
-    imm = axes[2].imshow(d2coin[:, redundant_left:], extent=extent, vmax=max_V)
+    imm = axes[2].imshow(d2coin[redundant_left:-redundant_right, :], extent=extent, vmax=max_V)
     axes[2].invert_xaxis()
     axes[2].tick_params(axis='y', left=False, labelleft=False)
+    axes[2].tick_params(axis='x', bottom=False, labelbottom=False)
     fig.colorbar(imm, ax=axes[2])
 
-    imm = axes[3].imshow(d2_re_coin[:, redundant_left:], extent=extent, vmax=max_V)
+    imm = axes[3].imshow(d2_re_coin[redundant_left:-redundant_right, :], extent=extent, vmax=max_V)
     axes[3].invert_xaxis()
     axes[3].tick_params(axis='y', left=False, labelleft=False)
+    axes[3].tick_params(axis='x', bottom=False, labelbottom=False)
     fig.colorbar(imm, ax=axes[3])
 
     fig.show()
@@ -313,8 +349,8 @@ def main():
     # memory()
     # similar_speckles2()
     # two_spots()
-    # memory()
-    reoptimization()
+    memory()
+    # reoptimization()
 
 
 if __name__ == '__main__':
