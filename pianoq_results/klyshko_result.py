@@ -92,36 +92,58 @@ class KlyshkoResult(object):
             self.diode_before.image = self.diode_before.image.astype(float) - self.diode_dark.image
             self.diode_before.image[self.diode_before.image < 0] = 0
 
-    def show(self, full=False, xs=True):
+    def show(self, full=False, xs=True, bare=False, save_to=None, norm_diode=False):
         fig, axes = plt.subplots(3, 2, figsize=(6.8, 8), constrained_layout=True)
-        imm = axes[0, 0].imshow(self.diode_before.image)
-        fig.colorbar(imm, ax=axes[0, 0])
-        axes[0, 0].set_title('diode before')
-
-        imm = axes[1, 0].imshow(self.diode_speckles.image)
-        fig.colorbar(imm, ax=axes[1, 0])
-        axes[1, 0].set_title('diode speckles')
-
-        imm = axes[2, 0].imshow(self.diode_optimized.image)
-        fig.colorbar(imm, ax=axes[2, 0])
-        axes[2, 0].set_title('diode optimized')
 
         if not full:
-            self._set_lims(axes[0, 0])
-            self._set_lims(axes[1, 0])
-            self._set_lims(axes[2, 0])
+            diode_before = self._crop_image(self.diode_before.image)
+            diode_speckles = self._crop_image(self.diode_speckles.image)
+            diode_optimized = self._crop_image(self.diode_optimized.image)
+        else:
+            diode_before = self.diode_before.image
+            diode_speckles = self.diode_speckles.image
+            diode_optimized = self.diode_optimized.image
+
+        if norm_diode:
+            mean_diode = diode_speckles.mean()
+            diode_before /= mean_diode
+            diode_speckles /= mean_diode
+            diode_optimized /= mean_diode
+
+        imm = axes[0, 0].imshow(diode_before)
+        fig.colorbar(imm, ax=axes[0, 0])
+
+        imm = axes[1, 0].imshow(diode_speckles)
+        fig.colorbar(imm, ax=axes[1, 0])
+
+        imm = axes[2, 0].imshow(diode_optimized)
+        fig.colorbar(imm, ax=axes[2, 0])
+
+        if not bare:
+            axes[0, 0].set_title('diode before')
+            axes[1, 0].set_title('diode speckles')
+            axes[2, 0].set_title('diode optimized')
 
         my_mesh(self.SPDC_before.X, self.SPDC_before.Y, self.SPDC_before.real_coins, axes[0, 1])
         axes[0, 1].invert_xaxis()
-        axes[0, 1].set_title('SPDC before')
 
         my_mesh(self.SPDC_speckles.X, self.SPDC_speckles.Y, self.SPDC_speckles.real_coins, axes[1, 1])
         axes[1, 1].invert_xaxis()
-        axes[1, 1].set_title('SPDC speckle')
 
         my_mesh(self.SPDC_optimized.X, self.SPDC_optimized.Y, self.SPDC_optimized.real_coins, axes[2, 1])
         axes[2, 1].invert_xaxis()
-        axes[2, 1].set_title('SPDC optimized')
+        if not bare:
+            axes[0, 1].set_title('SPDC before')
+            axes[1, 1].set_title('SPDC speckle')
+            axes[2, 1].set_title('SPDC optimized')
+
+        if bare:
+            axes[0, 0].tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
+            axes[1, 0].tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
+            axes[2, 0].tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
+            axes[0, 1].tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
+            axes[1, 1].tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
+            axes[2, 1].tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
 
         if xs:
             X_MARKER_COLOR = '#929591'
@@ -133,19 +155,23 @@ class KlyshkoResult(object):
             axes[2, 1].plot(self.optimization_x_loc, self.optimization_y_loc, '+', markeredgecolor=X_MARKER_COLOR,
                             markersize=11, markeredgewidth=X_MARKER_EDGEWITDH)
 
+        if save_to:
+            fig.savefig(save_to, dpi=fig.dpi)
         fig.show()
 
-    def _set_lims(self, ax):
+    def _crop_image(self, im):
         A = self.diode_before.image
         ind_row, ind_col = np.unravel_index(np.argmax(A, axis=None), A.shape)
         X = self.SPDC_before.X
         Y = self.SPDC_before.Y
         pix_size = self.diode_before.pix_size
-        X_pixs = (X[-1] - X[0])*1e-3 / pix_size
-        Y_pixs = (Y[-1] - Y[0]) * 1e-3 / pix_size
+        X_pixs = np.abs((X[-1] - X[0])*1e-3 / pix_size)
+        Y_pixs = np.abs((Y[-1] - Y[0]) * 1e-3 / pix_size)
 
-        ax.set_xlim(left=ind_col - X_pixs/2, right=ind_col + X_pixs/2)
-        ax.set_ylim(bottom=ind_row - Y_pixs/2, top=ind_row + Y_pixs/2)
+        return im[int(ind_row - Y_pixs/2): int(ind_row + Y_pixs/2), int(ind_col - X_pixs/2): int(ind_col + X_pixs/2)]
+
+        # ax.set_xlim(left=ind_col - X_pixs/2, right=ind_col + X_pixs/2)
+        # ax.set_ylim(bottom=ind_row - Y_pixs/2, top=ind_row + Y_pixs/2)
 
     def show_optimization_process(self):
         fig, ax = plt.subplots()
