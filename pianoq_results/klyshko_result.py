@@ -164,11 +164,25 @@ class KlyshkoResult(object):
 
     @property
     def efficiency_diode(self):
-        return self.diode_optimized.image.max() / self.diode_before.image.max()
+        cutoff_optimized = self.diode_optimized.image.max() / 2
+        optimized_vec = self.diode_optimized.image[self.diode_optimized.image > cutoff_optimized]
+        optimized = optimized_vec.sum() / optimized_vec.size
+
+        cutoff_no_diffuser = self.diode_before.image.max() / 2
+        no_diffuser_vec = self.diode_before.image[self.diode_before.image > cutoff_no_diffuser]
+        no_diffuser = no_diffuser_vec.sum() / no_diffuser_vec.size
+
+        return optimized / no_diffuser
 
     @property
     def efficiency_SPDC(self):
-        return self.SPDC_optimized.real_coins.max() / self.SPDC_before.real_coins.max()
+        # TODO: uncertainty from shot noise. should probably happen already in `sum_around_highest`
+        optimized = sum_around_highest(self.SPDC_optimized.real_coins) / 9
+        print(f'SPDC_{optimized=}')
+        no_diffuser = sum_around_highest(self.SPDC_before.real_coins) / 9
+        print(f'SPDC_{no_diffuser=}')
+
+        return optimized / no_diffuser
 
     @property
     def enhancement_diode(self):
@@ -184,10 +198,15 @@ class KlyshkoResult(object):
 
     @property
     def enhancement_SPDC(self):
-        # TODO: don't take only max in any of the enhancement / efficiency functions, rather somehow the speckle grain
-        speckles_coins = self.SPDC_speckles.real_coins.copy()
-        speckles_coins[speckles_coins < 0] = 0
-        return self.SPDC_optimized.real_coins.max() / speckles_coins.mean()
+        # TODO: uncertainty from shot noise. should probably happen already in `sum_around_highest`
+        optimized = sum_around_highest(self.SPDC_optimized.real_coins) / 9
+        print(f'SPDC_{optimized=}')
+        speckles = self.SPDC_speckles.real_coins.mean()
+        print(f'SPDC_{speckles=}')
+
+        # it is OK to sum and then redact accidentals, nothing non-physical here
+        # speckles_coins[speckles_coins < 0] = 0
+        return optimized / speckles
 
     def print(self):
         print('#########################')
@@ -270,3 +289,12 @@ def show_memory(dir_path, show_ds=(50, 150, 250), classic=False):
     fig.suptitle(f'classic = {classic}')
 
     fig.show()
+
+
+def sum_around_highest(matrix):
+    max_index = np.unravel_index(np.argmax(matrix), matrix.shape)
+    neighbors_indices = [(i, j) for i in range(max_index[0] - 1, max_index[0] + 2) for j in
+                         range(max_index[1] - 1, max_index[1] + 2) if
+                         0 <= i < matrix.shape[0] and 0 <= j < matrix.shape[1]]
+    return np.sum([matrix[i, j] for i, j in neighbors_indices])
+
