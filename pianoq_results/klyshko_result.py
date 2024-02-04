@@ -212,15 +212,13 @@ class KlyshkoResult(object):
 
     @property
     def enhancement_diode(self):
-        A = self.diode_before.image
-        ind_row, ind_col = np.unravel_index(np.argmax(A, axis=None), A.shape)
-        X = self.SPDC_before.X
-        Y = self.SPDC_before.Y
-        pix_size = self.diode_before.pix_size
-        X_pixs = (X.max() - X.min())*1e-3 / pix_size
-        Y_pixs = (Y.max() - Y.min()) * 1e-3 / pix_size
-        mask_for_enhancement = np.index_exp[int(ind_row - Y_pixs//2): int(ind_row + Y_pixs//2), int(ind_col - X_pixs//2): int(ind_col + X_pixs//2)]
-        return self.diode_optimized.image.max() / self.diode_speckles.image[mask_for_enhancement].mean()
+        im_speckles = self._crop_image(self.diode_speckles.image)
+
+        cutoff_optimized = self.diode_optimized.image.max() / 2
+        optimized_vec = self.diode_optimized.image[self.diode_optimized.image > cutoff_optimized]
+        optimized = optimized_vec.sum() / optimized_vec.size
+
+        return optimized / im_speckles.mean()
 
     @property
     def enhancement_SPDC(self):
