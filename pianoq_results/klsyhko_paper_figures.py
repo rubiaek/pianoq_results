@@ -229,9 +229,15 @@ def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_f
     reoptimization_x *= 10 * 10 / 100e3  # 10 for 6->60 um, than 10 for SMF magnification, and 100mm lens (e3 for mm instead of um)
 
     # reoptimization_y = np.array([120.21360481225001, 101.99433080050001, 37.6670910675, 89.29465100224999])  # smoothen=True
-    reoptimization_y = np.array([121.349386243, 113.208764652, 44.194766541999996, 100.437913236])  # smoothen = False
-    reoptimization_y /= reoptimization_y.max()
-    reoptimizationh, = ax.plot(reoptimization_x*1e3, reoptimization_y, 'v', label='reoptimization', color='purple', markersize=8)
+    reoptimization_y = np.array([121.3, 113.2, 44.2, 100.4])  # smoothen = False
+    reoptimization_y_errs = np.array([8., 8., 5., 7.])  # smoothen = False
+
+    max_y = reoptimization_y.max()
+    reoptimization_y /= max_y
+    reoptimization_y_errs /= max_y
+    reoptimizationh = ax.errorbar(reoptimization_x*1e3, reoptimization_y,
+                                   xerr=theta_err*1e3, yerr=reoptimization_y_errs,
+                                   fmt='v', label='reoptimization', color='purple', markersize=8)
 
     ax.set_xlabel(r'$\Delta\theta$ (mrd)', size=16)
     ax.set_ylabel('normalized focus intensity', size=16)
@@ -251,10 +257,10 @@ def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_f
                  dpi=fig.dpi)
 
 
-def memory(d_x=22, l1=4, l2=1):
+def memory(d_x=22, l1=4, l2=1, show_fit=False):
     dir_path_classical = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Memory\try6\diode_memory'
     dir_path_SPDC = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Memory\try6\SPDC_memory'
-    show_memories3(dir_path_classical, dir_path_SPDC, d_x=d_x, l1=l1, l2=l2)
+    show_memories3(dir_path_classical, dir_path_SPDC, d_x=d_x, l1=l1, l2=l2, show_fit=show_fit)
 
 
 def reoptimization(smoothen=True, N=4):
@@ -306,12 +312,22 @@ def reoptimization(smoothen=True, N=4):
                                  range(max_index[1] - 1, max_index[1] + 2) if
                                  0 <= i < matrix.shape[0] and 0 <= j < matrix.shape[1]]
             return np.sum([matrix[i, j] for i, j in neighbors_indices])
+
+        def sum_around_highest2(scan):
+            real_coins = scan.real_coins
+            real_coin_stds = scan.real_coins_std
+            max_index = np.unravel_index(np.argmax(real_coins), real_coins.shape)
+            neighbors_indices = [(i, j) for i in range(max_index[0] - 1, max_index[0] + 2) for j in
+                                 range(max_index[1] - 1, max_index[1] + 2) if
+                                 0 <= i < real_coins.shape[0] and 0 <= j < real_coins.shape[1]]
+            u_array = unumpy.uarray(real_coins, real_coin_stds)
+            return np.sum([u_array[i, j] for i, j in neighbors_indices])
         print('9 around max')
         # TODO: add error bars (shot noise, with integration_time = 2s)
-        print(f'{sum_around_highest(d7coin)}')
-        print(f'{sum_around_highest(d5_5coin)}')
-        print(f'{sum_around_highest(d2coin)}')
-        print(f'{sum_around_highest(d2_re_coin)}')
+        print(f'{sum_around_highest2(d7)}')
+        print(f'{sum_around_highest2(d5_5)}')
+        print(f'{sum_around_highest2(d2)}')
+        print(f'{sum_around_highest2(d2_reoptimized)}')
 
     imm = axes[0].imshow(d7coin[redundant_left:-redundant_right, :], extent=extent, vmax=max_V)
     axes[0].invert_xaxis()
@@ -349,8 +365,8 @@ def main():
     # memory()
     # similar_speckles2()
     # two_spots()
-    memory()
-    # reoptimization()
+    memory(show_fit=True)
+    # reoptimization(smoothen=False)
 
 
 if __name__ == '__main__':
