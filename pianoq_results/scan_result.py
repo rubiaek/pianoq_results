@@ -69,7 +69,7 @@ class ScanResult(object):
 
     @property
     def real_coins_std(self):
-        return np.sqrt(self.real_coins) / np.sqrt(self.integration_time)
+        return np.nan_to_num(np.sqrt(self.real_coins)) / np.sqrt(self.integration_time)
 
     @property
     def real_coins2(self):

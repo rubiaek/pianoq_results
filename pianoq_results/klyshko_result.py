@@ -9,6 +9,7 @@ from pianoq_results.misc import my_mesh
 from pianoq_results.scan_result import ScanResult
 from pianoq_results.fits_image import FITSImage
 from pianoq_results.slm_optimization_result import SLMOptimizationResult
+from uncertainties import unumpy
 
 
 class KlyshkoResult(object):
@@ -202,10 +203,9 @@ class KlyshkoResult(object):
 
     @property
     def efficiency_SPDC(self):
-        # TODO: uncertainty from shot noise. should probably happen already in `sum_around_highest`
-        optimized = sum_around_highest(self.SPDC_optimized.real_coins) / 9
+        optimized = sum_around_highest(self.SPDC_optimized) / 9
         print(f'SPDC_{optimized=}')
-        no_diffuser = sum_around_highest(self.SPDC_before.real_coins) / 9
+        no_diffuser = sum_around_highest(self.SPDC_before) / 9
         print(f'SPDC_{no_diffuser=}')
 
         return optimized / no_diffuser
@@ -222,10 +222,10 @@ class KlyshkoResult(object):
 
     @property
     def enhancement_SPDC(self):
-        # TODO: uncertainty from shot noise. should probably happen already in `sum_around_highest`
-        optimized = sum_around_highest(self.SPDC_optimized.real_coins) / 9
+        optimized = sum_around_highest(self.SPDC_optimized) / 9
         print(f'SPDC_{optimized=}')
-        speckles = self.SPDC_speckles.real_coins.mean()
+        u_array = unumpy.uarray(self.SPDC_speckles.real_coins, self.SPDC_speckles.real_coins_std)
+        speckles = u_array.sum() / u_array.size
         print(f'SPDC_{speckles=}')
 
         # it is OK to sum and then redact accidentals, nothing non-physical here
@@ -315,10 +315,17 @@ def show_memory(dir_path, show_ds=(50, 150, 250), classic=False):
     fig.show()
 
 
-def sum_around_highest(matrix):
-    max_index = np.unravel_index(np.argmax(matrix), matrix.shape)
+def sum_around_highest(scan):
+    real_coins = scan.real_coins
+    real_coin_stds = scan.real_coins_std
+    u_array = unumpy.uarray(real_coins, real_coin_stds)
+    max_index = np.unravel_index(np.argmax(real_coins), real_coins.shape)
     neighbors_indices = [(i, j) for i in range(max_index[0] - 1, max_index[0] + 2) for j in
                          range(max_index[1] - 1, max_index[1] + 2) if
-                         0 <= i < matrix.shape[0] and 0 <= j < matrix.shape[1]]
-    return np.sum([matrix[i, j] for i, j in neighbors_indices])
+                         0 <= i < real_coins.shape[0] and 0 <= j < real_coins.shape[1]]
 
+    return np.sum([u_array[i, j] for i, j in neighbors_indices])
+
+
+# res = KlyshkoResult(r"G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\2023_09_13_11_19_55_klyshko_very_thick_0.5_and_0.25EDC_0.25EDS")
+# res.print()
