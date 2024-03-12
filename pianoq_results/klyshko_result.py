@@ -189,48 +189,49 @@ class KlyshkoResult(object):
         fig.show()
         return phase
 
-    @property
-    def efficiency_diode(self):
+    def _get_optimized_diode_num(self):
         cutoff_optimized = self.diode_optimized.image.max() / 2
         optimized_vec = self.diode_optimized.image[self.diode_optimized.image > cutoff_optimized]
         optimized = optimized_vec.sum() / optimized_vec.size
+        return optimized
 
+    def _get_speckles_diode_num(self):
+        im_speckles = self._crop_image(self.diode_speckles.image)
+        return im_speckles.mean()
+
+    def _get_no_diffuser_diode_num(self):
         cutoff_no_diffuser = self.diode_before.image.max() / 2
         no_diffuser_vec = self.diode_before.image[self.diode_before.image > cutoff_no_diffuser]
         no_diffuser = no_diffuser_vec.sum() / no_diffuser_vec.size
-
-        return optimized / no_diffuser
+        return no_diffuser
 
     @property
-    def efficiency_SPDC(self):
-        optimized = sum_around_highest(self.SPDC_optimized) / 9
-        print(f'SPDC_{optimized=}')
-        no_diffuser = sum_around_highest(self.SPDC_before) / 9
-        print(f'SPDC_{no_diffuser=}')
-
-        return optimized / no_diffuser
+    def efficiency_diode(self):
+        return self._get_optimized_diode_num() / self._get_no_diffuser_diode_num()
 
     @property
     def enhancement_diode(self):
-        im_speckles = self._crop_image(self.diode_speckles.image)
+        return self._get_optimized_diode_num() / self._get_speckles_diode_num()
 
-        cutoff_optimized = self.diode_optimized.image.max() / 2
-        optimized_vec = self.diode_optimized.image[self.diode_optimized.image > cutoff_optimized]
-        optimized = optimized_vec.sum() / optimized_vec.size
+    def _get_optimized_SPDC_num(self):
+        return sum_around_highest(self.SPDC_optimized) / 9
 
-        return optimized / im_speckles.mean()
+    def _get_speckles_SPDC_num(self):
+        # it is OK to sum and then redact accidentals, nothing non-physical here
+        # speckles_coins[speckles_coins < 0] = 0
+        u_array = unumpy.uarray(self.SPDC_speckles.real_coins, self.SPDC_speckles.real_coins_std)
+        speckles = u_array.sum() / u_array.size
+        return speckles
+
+    def _get_no_diffuser_SPDC_num(self):
+        return sum_around_highest(self.SPDC_before) / 9
+    @property
+    def efficiency_SPDC(self):
+        return self._get_optimized_SPDC_num() / self._get_no_diffuser_SPDC_num()
 
     @property
     def enhancement_SPDC(self):
-        optimized = sum_around_highest(self.SPDC_optimized) / 9
-        print(f'SPDC_{optimized=}')
-        u_array = unumpy.uarray(self.SPDC_speckles.real_coins, self.SPDC_speckles.real_coins_std)
-        speckles = u_array.sum() / u_array.size
-        print(f'SPDC_{speckles=}')
-
-        # it is OK to sum and then redact accidentals, nothing non-physical here
-        # speckles_coins[speckles_coins < 0] = 0
-        return optimized / speckles
+        return self._get_optimized_SPDC_num() / self._get_speckles_SPDC_num()
 
     def print(self):
         print('#########################')
