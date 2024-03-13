@@ -20,6 +20,44 @@ PATH_OPTIMIZATION = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\2023
 PATH_THICK_MEMORY = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\2023_09_20_09_52_22_klyshko_very_thick_with_memory_meas\Memory'
 
 
+def classical_memory(show_ds=(7, 6, 4, 1)):
+    dir_path = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Memory\try6\diode_memory'
+    paths = glob.glob(f'{dir_path}\\*d=*.fits')
+    all_ds = np.array([re.findall('.*d=(.*).fits', path)[0] for path in paths]).astype(float)
+
+    ind = np.where(all_ds == show_ds[0])[0][0]
+    im = FITSImage(paths[ind])
+    image = im.image
+    image -= image.min()
+    I_max = image.max()
+
+    fig, axes = plt.subplots(1, len(show_ds), figsize=(len(show_ds)*3, 2.7), constrained_layout=True)
+    for i in range(len(show_ds)):
+        ind = np.where(all_ds == show_ds[i])[0][0]
+        im = FITSImage(paths[ind])
+        image = im.image
+        image -= image.min()
+        imm = axes[i].imshow(image, vmax=I_max)
+        # ind_row, ind_col = np.unravel_index(np.argmax(image, axis=None), image.shape)
+        ind_row, ind_col = 400, 400
+        X_pixs = 150
+        Y_pixs = 150
+        axes[i].set_xlim(left=ind_col - X_pixs / 2, right=ind_col + X_pixs / 2)
+        axes[i].set_ylim(bottom=ind_row - Y_pixs / 2, top=ind_row + Y_pixs / 2)
+        # if i != 0:
+        if True:
+            # axes[i].tick_params(axis='both', which='both', left=False, bottom=True, labelleft=False, labelbottom=True)
+            axes[i].tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
+        if i == len(show_ds) - 1:
+            fig.colorbar(imm, ax=axes[i])
+
+        # axes[i].set_title(f'd = {show_ds[i]}')
+
+    fig.show()
+    timestamp = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M')
+    fig.savefig(rf'G:\My Drive\Projects\Klyshko Optimization\Paper1\Figures\{timestamp}_classical_memory.svg', dpi=fig.dpi)
+
+
 def memory_old():
     show_memory(PATH_THICK_MEMORY, show_ds=(50, 60, 70, 80, 90, 100, 150, 200), classic=True)
     show_memory(PATH_THICK_MEMORY, show_ds=(50, 60, 70, 80, 90, 100), classic=False)
@@ -218,11 +256,11 @@ def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_f
         popt, pcov = curve_fit(mem_func, diode_thetas, diode_corrs, p0=0.02, bounds=(1e-6, 2))
         # *1e3 for mrd instead of rad
         fit1h, = ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='diode fit', color='mediumseagreen')
-        print(*popt)
+        print(f'diode: d_theta= {popt[0]}+-{np.sqrt(pcov[0][0])}')
         popt, pcov = curve_fit(mem_func, SPDC_thetas, SPDC_corrs, p0=0.02, bounds=(1e-6, 2))
         # *1e3 for mrd instead of rad
         fit2h, = ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='SPDC fit', color='mediumpurple')
-        print(*popt)
+        print(f'SPDC: d_theta= {popt[0]}+-{np.sqrt(pcov[0][0])}')
 
     reoptimization_x = np.array([7, 5.5, 2, 2])
     reoptimization_x = reoptimization_x[0] - reoptimization_x
@@ -365,8 +403,9 @@ def main():
     # memory()
     # similar_speckles2()
     # two_spots()
-    memory(show_fit=True)
+    # memory(show_fit=True)
     # reoptimization(smoothen=False)
+    classical_memory()
 
 
 if __name__ == '__main__':
