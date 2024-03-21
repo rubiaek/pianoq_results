@@ -31,13 +31,13 @@ def classical_memory(show_ds=(7, 6, 4, 1)):
     image -= image.min()
     I_max = image.max()
 
-    fig, axes = plt.subplots(1, len(show_ds), figsize=(len(show_ds)*3, 2.7), constrained_layout=True)
+    fig, axes = plt.subplots(1, len(show_ds), figsize=(len(show_ds)*3, 2.4), constrained_layout=True)
     for i in range(len(show_ds)):
         ind = np.where(all_ds == show_ds[i])[0][0]
         im = FITSImage(paths[ind])
         image = im.image
         image -= image.min()
-        imm = axes[i].imshow(image, vmax=I_max)
+        imm = axes[i].imshow(image) # , vmax=I_max)
         # ind_row, ind_col = np.unravel_index(np.argmax(image, axis=None), image.shape)
         ind_row, ind_col = 400, 400
         X_pixs = 150
@@ -45,11 +45,11 @@ def classical_memory(show_ds=(7, 6, 4, 1)):
         axes[i].set_xlim(left=ind_col - X_pixs / 2, right=ind_col + X_pixs / 2)
         axes[i].set_ylim(bottom=ind_row - Y_pixs / 2, top=ind_row + Y_pixs / 2)
         # if i != 0:
-        if True:
+        # if True:
             # axes[i].tick_params(axis='both', which='both', left=False, bottom=True, labelleft=False, labelbottom=True)
-            axes[i].tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
-        if i == len(show_ds) - 1:
-            fig.colorbar(imm, ax=axes[i])
+        axes[i].tick_params(axis='both', which='both', left=False, bottom=False, labelleft=False, labelbottom=False)
+        # if i == len(show_ds) - 1:
+        fig.colorbar(imm, ax=axes[i])
 
         # axes[i].set_title(f'd = {show_ds[i]}')
 
@@ -397,6 +397,20 @@ def reoptimization(smoothen=True, N=4):
                  dpi=fig.dpi)
 
 
+def print_pump_waist(line_no=1115, col_no=None, x0=None):
+    if line_no is not None:
+        assert col_no is None
+    im = FITSImage(r"G:\My Drive\Projects\Klyshko Optimization\Results\Calibrations\waist_at_crystal.fits")
+    sig_pix = im.fit_to_gaus(x0, 200, line_no=line_no, col_no=col_no)[1]
+    fig, ax = plt.subplots()
+    ax.imshow(im.image)
+    if line_no:
+        ax.axhline(y=line_no, linestyle='--')
+    else:
+        ax.axvline(x=col_no, linestyle='--')
+    print(f'waist is: {sig_pix*2.2}um')
+
+
 def main():
     # optimization()
     # thick()
@@ -406,6 +420,9 @@ def main():
     # memory(show_fit=True)
     # reoptimization(smoothen=False)
     classical_memory()
+    # print_pump_waist(line_no=1115, col_no=None, x0=1500)
+    # print_pump_waist(line_no=1045, col_no=None, x0=1500)
+    # print_pump_waist(line_no=None, col_no=1530, x0=1100)
 
 
 if __name__ == '__main__':

@@ -64,15 +64,17 @@ class FITSImage(object):
         fig.show()
         return VV
 
-    def fit_to_gaus(self, x0, sig, line_no=None, col_no=None):
+    def fit_to_gaus(self, x00, sig0, line_no=None, col_no=None):
         VV = self._get_slice(line_no, col_no)
         dummy_x = np.arange(len(VV))
         gaus = lambda x, x0, sig: np.exp(-((x - x0) ** 2) / (sig ** 2))
-        popt, pcov = curve_fit(gaus, dummy_x, VV, p0=(1000, 50))
+        popt, pcov = curve_fit(gaus, dummy_x, VV, p0=(x00, sig0))
         print(popt)
 
         fig, ax = plt.subplots()
         ax.plot(dummy_x, VV)
         ax.plot(dummy_x, gaus(dummy_x, *popt))
+        ax.set_title(f'{line_no=}, {col_no=}')
         fig.show()
 
+        return popt
