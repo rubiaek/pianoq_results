@@ -67,7 +67,7 @@ class FITSImage(object):
     def fit_to_gaus(self, x00, sig0, line_no=None, col_no=None):
         VV = self._get_slice(line_no, col_no)
         dummy_x = np.arange(len(VV))
-        gaus = lambda x, x0, sig: np.exp(-((x - x0) ** 2) / (sig ** 2))
+        gaus = lambda x, x0, sig: np.exp(-2*((x - x0) ** 2) / (sig ** 2))  # See wiki on Gausian beam. E(x) is with no 2.
         popt, pcov = curve_fit(gaus, dummy_x, VV, p0=(x00, sig0))
         print(popt)
 
