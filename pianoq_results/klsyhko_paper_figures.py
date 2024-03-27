@@ -236,7 +236,7 @@ def mem_func(theta, d_theta):
     return ( (theta/d_theta) / (1e-17 + np.sinh(theta/d_theta)) )**2
 
 
-def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_fit=True):
+def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_fit=True, show_reoptimization=True):
     from matplotlib.legend_handler import HandlerTuple
 
     fig, ax = plt.subplots(figsize=(8, 4), constrained_layout=True)
@@ -273,20 +273,23 @@ def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_f
     max_y = reoptimization_y.max()
     reoptimization_y /= max_y
     reoptimization_y_errs /= max_y
-    reoptimizationh = ax.errorbar(reoptimization_x*1e3, reoptimization_y,
-                                   xerr=theta_err*1e3, yerr=reoptimization_y_errs,
-                                   fmt='v', label='reoptimization', color='purple', markersize=8)
+    if show_reoptimization:
+        reoptimizationh = ax.errorbar(reoptimization_x*1e3, reoptimization_y,
+                                       xerr=theta_err*1e3, yerr=reoptimization_y_errs,
+                                       fmt='v', label='reoptimization', color='purple', markersize=8)
 
-    ax.set_xlabel(r'$\Delta\theta$ (mrd)', size=16)
+    ax.set_xlabel(r'$\Delta\theta$ (mrad)', size=16)
     ax.set_ylabel('normalized focus intensity', size=16)
     ax.tick_params(axis='both', which='major', labelsize=12)
 
+    SPDCs = (spdch, reoptimizationh) if show_reoptimization else spdch
     if show_fit:
-        l = ax.legend([fit1h, fit2h, diodeh, (spdch, reoptimizationh)], ['diode fit', 'SPDC fit', 'diode','SPDC'],
-                       handler_map={tuple: HandlerTuple(ndivide=None)})
+
+        l = ax.legend([fit1h, fit2h, diodeh, SPDCs], ['diode fit', 'SPDC fit', 'diode','SPDC'],
+                      handler_map={tuple: HandlerTuple(ndivide=None)})
     else:
-        l = ax.legend([diodeh, (spdch, reoptimizationh)], ['diode', 'SPDC'],
-                       handler_map={tuple: HandlerTuple(ndivide=None)})
+        l = ax.legend([diodeh, SPDCs], ['diode', 'SPDC'],
+                      handler_map={tuple: HandlerTuple(ndivide=None)})
 
     # fig.legend()  # bbox_to_anchor=(0.95, 0.95))
     fig.show()
@@ -295,10 +298,11 @@ def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_f
                  dpi=fig.dpi)
 
 
-def memory(d_x=22, l1=4, l2=1, show_fit=False):
+def memory(d_x=22, l1=4, l2=1, show_fit=False, show_reoptimization=True):
     dir_path_classical = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Memory\try6\diode_memory'
     dir_path_SPDC = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Memory\try6\SPDC_memory'
-    show_memories3(dir_path_classical, dir_path_SPDC, d_x=d_x, l1=l1, l2=l2, show_fit=show_fit)
+    show_memories3(dir_path_classical, dir_path_SPDC, d_x=d_x, l1=l1, l2=l2, show_fit=show_fit,
+                   show_reoptimization=show_reoptimization)
 
 
 def reoptimization(smoothen=True, N=4):
@@ -417,9 +421,9 @@ def main():
     # memory()
     # similar_speckles2()
     # two_spots()
-    # memory(show_fit=True)
+    memory(show_fit=True, show_reoptimization=False)
     # reoptimization(smoothen=False)
-    classical_memory()
+    # classical_memory()
     # print_pump_waist(line_no=1115, col_no=None, x0=1500)
     # print_pump_waist(line_no=1045, col_no=None, x0=1500)
     # print_pump_waist(line_no=None, col_no=1530, x0=1100)
