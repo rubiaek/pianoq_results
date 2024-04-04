@@ -236,7 +236,7 @@ def mem_func(theta, d_theta):
     return ( (theta/d_theta) / (1e-17 + np.sinh(theta/d_theta)) )**2
 
 
-def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_fit=True, show_reoptimization=True):
+def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_fit=True, show_reoptimization=True, show_classical=True):
     from matplotlib.legend_handler import HandlerTuple
 
     fig, ax = plt.subplots(figsize=(8, 4), constrained_layout=True)
@@ -248,15 +248,17 @@ def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_f
     theta_err = 2*10/100e3  # 20 um in manual micrometer, and 100mm lens (e3 for mm instead of um)
 
     spdch = ax.errorbar(SPDC_thetas*1e3, SPDC_corrs, xerr=theta_err*1e3, yerr=SPDC_corr_stds, fmt='o', label='SPDC', color='mediumpurple')
-    diodeh = ax.errorbar(diode_thetas*1e3, diode_corrs, xerr=theta_err*1e3, fmt='*', label='diode', color='mediumseagreen')
+    if show_classical:
+        diodeh = ax.errorbar(diode_thetas*1e3, diode_corrs, xerr=theta_err*1e3, fmt='*', label='diode', color='mediumseagreen')
 
     if show_fit:
         dummy_theta = np.linspace(1e-6, 0.007, 1000)
         # ax.plot(dummy_x, mem_func(dummy_x, d_x), '-', label='analytical')
         popt, pcov = curve_fit(mem_func, diode_thetas, diode_corrs, p0=0.02, bounds=(1e-6, 2))
-        # *1e3 for mrd instead of rad
-        fit1h, = ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='diode fit', color='mediumseagreen')
-        print(f'diode: d_theta= {popt[0]}+-{np.sqrt(pcov[0][0])}')
+        if show_classical:
+            # *1e3 for mrd instead of rad
+            fit1h, = ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='diode fit', color='mediumseagreen')
+            print(f'diode: d_theta= {popt[0]}+-{np.sqrt(pcov[0][0])}')
         popt, pcov = curve_fit(mem_func, SPDC_thetas, SPDC_corrs, p0=0.02, bounds=(1e-6, 2))
         # *1e3 for mrd instead of rad
         fit2h, = ax.plot(dummy_theta*1e3, mem_func(dummy_theta, *popt), '--', label='SPDC fit', color='mediumpurple')
@@ -284,9 +286,12 @@ def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_f
 
     SPDCs = (spdch, reoptimizationh) if show_reoptimization else spdch
     if show_fit:
-
-        l = ax.legend([fit1h, fit2h, diodeh, SPDCs], ['diode fit', 'SPDC fit', 'diode','SPDC'],
-                      handler_map={tuple: HandlerTuple(ndivide=None)})
+        if show_classical:
+            l = ax.legend([fit1h, fit2h, diodeh, SPDCs], ['diode fit', 'SPDC fit', 'diode','SPDC'],
+                          handler_map={tuple: HandlerTuple(ndivide=None)})
+        else:
+            l = ax.legend([fit2h, SPDCs], ['SPDC fit', 'SPDC'],
+                          handler_map={tuple: HandlerTuple(ndivide=None)})
     else:
         l = ax.legend([diodeh, SPDCs], ['diode', 'SPDC'],
                       handler_map={tuple: HandlerTuple(ndivide=None)})
@@ -298,11 +303,11 @@ def show_memories3(dir_path_classical, dir_path_SPDC, d_x=22, l1=3, l2=1, show_f
                  dpi=fig.dpi)
 
 
-def memory(d_x=22, l1=4, l2=1, show_fit=False, show_reoptimization=True):
+def memory(d_x=22, l1=4, l2=1, show_fit=False, show_reoptimization=True, show_classical=True):
     dir_path_classical = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Memory\try6\diode_memory'
     dir_path_SPDC = r'G:\My Drive\Projects\Klyshko Optimization\Paper1\Data\Memory\try6\SPDC_memory'
     show_memories3(dir_path_classical, dir_path_SPDC, d_x=d_x, l1=l1, l2=l2, show_fit=show_fit,
-                   show_reoptimization=show_reoptimization)
+                   show_reoptimization=show_reoptimization, show_classical=show_classical)
 
 
 def reoptimization(smoothen=True, N=4):
@@ -421,7 +426,7 @@ def main():
     # memory()
     # similar_speckles2()
     # two_spots()
-    memory(show_fit=True, show_reoptimization=False)
+    memory(show_fit=True, show_reoptimization=True, show_classical=False)
     # reoptimization(smoothen=False)
     # classical_memory()
     # print_pump_waist(line_no=1115, col_no=None, x0=1500)
