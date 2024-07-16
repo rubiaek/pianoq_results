@@ -135,6 +135,20 @@ class PianoPSOOptimizationResult(object):
 
         return percentage1, percentage2
 
+
+    def _amps_to_full_amps(self, amps):
+        new_amps = np.ones(40)
+        new_amps[self.good_piezo_indexes] = amps
+        return new_amps
+
+    def dump_amps(self, path):
+        with open(path, 'w') as f:
+            for amps in self.amplitudes:
+                new_amps = self._amps_to_full_amps(amps)
+                str_amps = [str(x) for x in new_amps]
+                s = ','.join(str_amps) + '\n'
+                f.write(s)
+
     def saveto(self, path):
         try:
             f = open(path, 'wb')
