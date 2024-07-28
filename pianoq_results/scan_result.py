@@ -139,8 +139,17 @@ class ScanResult(object):
         axes[1].set_title(f'Single counts 2 {title}')
         fig.show()
 
-    def get_xys(self, num_spots=5):
-        pass
+    def get_xys(self, single_num=1, num_spots=5):
+        if single_num == 1:
+            s = self.single1s
+        elif single_num == 2:
+            s = self.single2s
+        fig, ax = plt.subplots()
+        my_mesh(self.X, self.Y, s, ax)
+        ax.set_title(f'Single counts {single_num}')
+        fig.show()
+        locs = fig.ginput(n=num_spots)
+        return locs
 
     def saveto(self, path):
         try:
