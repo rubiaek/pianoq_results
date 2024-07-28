@@ -128,6 +128,20 @@ class ScanResult(object):
         self.show(show_singles=True, remove_accidentals=True)
         self.show(show_singles=False, remove_accidentals=False)
 
+    def show_singles(self, title=''):
+        self.reload()
+        fig, axes = plt.subplots(1, 2)
+        my_mesh(self.X, self.Y, self.single1s, axes[0])
+        my_mesh(self.X, self.Y, self.single2s, axes[1])
+        axes[0].invert_xaxis()
+        axes[1].invert_xaxis()
+        axes[0].set_title(f'Single counts 1 {title}')
+        axes[1].set_title(f'Single counts 2 {title}')
+        fig.show()
+
+    def get_xys(self, num_spots=5):
+        pass
+
     def saveto(self, path):
         try:
             f = open(path, 'wb')
