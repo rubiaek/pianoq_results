@@ -139,7 +139,7 @@ class ScanResult(object):
         axes[1].set_title(f'Single counts 2 {title}')
         fig.show()
 
-    def get_xys(self, single_num=1, num_spots=5):
+    def get_xys(self, single_num=1, num_spots=5, timeout=0):
         if single_num == 1:
             s = self.single1s
         elif single_num == 2:
@@ -148,7 +148,7 @@ class ScanResult(object):
         my_mesh(self.X, self.Y, s, ax)
         ax.set_title(f'Single counts {single_num}')
         fig.show()
-        locs = fig.ginput(n=num_spots)
+        locs = fig.ginput(n=num_spots, timeout=timeout)
         return locs
 
     def saveto(self, path):
