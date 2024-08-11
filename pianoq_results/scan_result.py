@@ -139,7 +139,7 @@ class ScanResult(object):
         axes[1].set_title(f'Single counts 2 {title}')
         fig.show()
 
-    def get_xys(self, single_num=1, num_spots=5, timeout=0):
+    def get_xys(self, single_num=1, num_spots=5, timeout=0, saveto_dir=None, saveto_path=None):
         if single_num == 1:
             s = self.single1s
         elif single_num == 2:
@@ -149,6 +149,18 @@ class ScanResult(object):
         ax.set_title(f'Single counts {single_num}')
         fig.show()
         locs = fig.ginput(n=num_spots, timeout=timeout)
+
+        timestamp = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+        if saveto_path is None:
+            saveto_dir = saveto_dir or "C:\\temp"
+            name = 'sig' if single_num == 2 else 'idl'
+            saveto_path = os.path.join(saveto_dir, f's{single_num}_{name}_{timestamp}.locs')
+
+        f = open(saveto_path, 'wb')
+        np.savez(saveto_path, locs)
+        f.close()
+        print(f"Saved to {saveto_path}")
+
         return locs
 
     def saveto(self, path):
