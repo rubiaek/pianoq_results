@@ -7,6 +7,8 @@ import pyperclip
 import traceback
 import glob
 from pianoq_results.misc import my_mesh
+import datetime
+import os
 
 LOGS_DIR = "C:\\temp"
 
@@ -157,7 +159,7 @@ class ScanResult(object):
             saveto_path = os.path.join(saveto_dir, f's{single_num}_{name}_{timestamp}.locs')
 
         f = open(saveto_path, 'wb')
-        np.savez(saveto_path, locs)
+        np.savez(saveto_path, locs=locs)
         f.close()
         print(f"Saved to {saveto_path}")
 
