@@ -156,10 +156,10 @@ class ScanResult(object):
         if saveto_path is None:
             saveto_dir = saveto_dir or "C:\\temp"
             name = 'sig' if single_num == 2 else 'idl'
-            saveto_path = os.path.join(saveto_dir, f's{single_num}_{name}_{timestamp}.locs')
+            saveto_path = os.path.join(saveto_dir, f'{timestamp}_s{single_num}_{name}.locs')
 
         f = open(saveto_path, 'wb')
-        np.savez(saveto_path, locs=locs)
+        np.savez(f, locs=locs)
         f.close()
         print(f"Saved to {saveto_path}")
 
