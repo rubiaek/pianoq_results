@@ -144,18 +144,21 @@ class ScanResult(object):
     def get_xys(self, single_num=1, num_spots=5, timeout=0, saveto_dir=None, saveto_path=None):
         if single_num == 1:
             s = self.single1s
+            name = 'idl'
+            txt = 'middle to up (lower y)'
         elif single_num == 2:
             s = self.single2s
+            name = 'sig'
+            txt = 'middle to down (higher y)'
         fig, ax = plt.subplots()
         my_mesh(self.X, self.Y, s, ax)
-        ax.set_title(f'Single counts {single_num}')
+        ax.set_title(f'Single counts {single_num}, {name}, {txt}')
         fig.show()
         locs = fig.ginput(n=num_spots, timeout=timeout)
 
         timestamp = datetime.datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
         if saveto_path is None:
             saveto_dir = saveto_dir or "C:\\temp"
-            name = 'sig' if single_num == 2 else 'idl'
             saveto_path = os.path.join(saveto_dir, f'{timestamp}_s{single_num}_{name}.locs')
 
         f = open(saveto_path, 'wb')
