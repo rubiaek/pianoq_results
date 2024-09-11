@@ -130,16 +130,26 @@ class ScanResult(object):
         self.show(show_singles=True, remove_accidentals=True)
         self.show(show_singles=False, remove_accidentals=False)
 
-    def show_singles(self, title=''):
+    def show_singles(self, title='', only=None):
         self.reload()
-        fig, axes = plt.subplots(1, 2)
-        my_mesh(self.X, self.Y, self.single1s, axes[0])
-        my_mesh(self.X, self.Y, self.single2s, axes[1])
-        axes[0].invert_xaxis()
-        axes[1].invert_xaxis()
-        axes[0].set_title(f'Single counts 1 {title}')
-        axes[1].set_title(f'Single counts 2 {title}')
-        fig.show()
+        if not only:
+            fig, axes = plt.subplots(1, 2)
+            my_mesh(self.X, self.Y, self.single1s, axes[0])
+            my_mesh(self.X, self.Y, self.single2s, axes[1])
+            axes[0].invert_xaxis()
+            axes[1].invert_xaxis()
+            axes[0].set_title(f'Single counts 1 {title}')
+            axes[1].set_title(f'Single counts 2 {title}')
+            fig.show()
+        else:
+            fig, ax = plt.subplots()
+            if only == 1:
+                my_mesh(self.X, self.Y, self.single1s, ax)
+            elif only == 2:
+                my_mesh(self.X, self.Y, self.single2s, ax)
+            ax.invert_xaxis()
+            ax.set_title(f'Single counts {only} {title}')
+            fig.show()
 
     def get_xys(self, single_num=1, num_spots=5, timeout=0, saveto_dir=None, saveto_path=None):
         if single_num == 1:
