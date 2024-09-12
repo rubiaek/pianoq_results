@@ -9,5 +9,6 @@ name = os.path.basename(path)
 r = DiscreetScanResult()
 r.loadfrom(path)
 r.show()
+r.show_singles()
 
 plt.show()
