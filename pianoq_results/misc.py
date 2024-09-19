@@ -85,6 +85,8 @@ def my_mesh(X, Y, C, ax=None, clim=None, c_label=None, title=''):
     if len(X) >= 2 and len(Y) >= 2:
         dx = (X[1] - X[0]) / 2
         dy = (Y[1] - Y[0]) / 2
+        # left, right, bottom, top.
+        # in scan_result Y tends to be descending, because when I create the scan I do Y[::-1] for some reason
         extent = (X[0]-dx, X[-1]+dx, Y[0]-dy, Y[-1]+dy)
         im = ax.imshow(C, extent=extent)
     else:

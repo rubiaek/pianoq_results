@@ -150,6 +150,7 @@ class ScanResult(object):
             ax.invert_xaxis()
             ax.set_title(f'Single counts {only} {title}')
             fig.show()
+            return ax
 
     def get_xys(self, single_num=1, num_spots=5, timeout=0, saveto_dir=None, saveto_path=None):
         if single_num == 1:
