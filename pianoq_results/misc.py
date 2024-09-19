@@ -79,7 +79,7 @@ class Player(FuncAnimation):
         self.button_oneforward.on_clicked(self.oneforward)
 
 
-def my_mesh(X, Y, C, ax=None, clim=None, c_label=None):
+def my_mesh(X, Y, C, ax=None, clim=None, c_label=None, title=''):
     if ax is None:
         fig, ax = plt.subplots()
     if len(X) >= 2 and len(Y) >= 2:
@@ -94,5 +94,7 @@ def my_mesh(X, Y, C, ax=None, clim=None, c_label=None):
     cbar = ax.figure.colorbar(im, ax=ax)
     if c_label:
         cbar.set_label(c_label)
+    if title:
+        ax.set_title(title)
     return im
 
