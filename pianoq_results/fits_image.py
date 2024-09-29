@@ -29,8 +29,8 @@ class FITSImage(object):
         self.image = self.f[0].data
         self.header = self.f[0].header
         self.exposure_time = self.header['EXPTIME']
-        self.timestamp = self.header['DATE-OBS']
-        self.pix_size = self.header['XPIXSZ'] * 1e-6 * self.header['XBINNING']
+        self.timestamp = self.header.get('DATE-OBS', None)
+        self.pix_size = self.header['XPIXSZ'] * 1e-6 * self.header.get('XBINNING', 1)
         self.f.close()
 
     def show_image(self, aspect=None, title=None):
