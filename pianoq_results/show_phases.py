@@ -14,6 +14,8 @@ r.loadfrom(path)
 modes_to_keep = np.array([3, 8, 13, 18, 23, 28, 33, 38, 43, 48]) - 1
 print(r.phases[modes_to_keep])
 
+r.plot_best_phases()
+
 fig, ax = plt.subplots()
 ax.plot(r.phases[modes_to_keep], label=name)
 fig.legend()
