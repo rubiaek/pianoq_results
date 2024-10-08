@@ -6,9 +6,10 @@ import typing
 import pyperclip
 import traceback
 import glob
-from pianoq_results.misc import my_mesh
+from pianoq_results.misc import my_mesh, figshow
 import datetime
 import os
+
 
 LOGS_DIR = "C:\\temp"
 
@@ -140,7 +141,7 @@ class ScanResult(object):
             axes[1].invert_xaxis()
             axes[0].set_title(f'Single counts 1 {title}')
             axes[1].set_title(f'Single counts 2 {title}')
-            fig.show()
+            figshow(fig)
         else:
             fig, ax = plt.subplots()
             if only == 1:
@@ -149,7 +150,7 @@ class ScanResult(object):
                 my_mesh(self.X, self.Y, self.single2s, ax)
             ax.invert_xaxis()
             ax.set_title(f'Single counts {only} {title}')
-            fig.show()
+            figshow(fig)
             return ax
 
     def get_xys(self, single_num=1, num_spots=5, timeout=0, saveto_dir=None, saveto_path=None):

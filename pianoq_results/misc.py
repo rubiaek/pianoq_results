@@ -100,3 +100,13 @@ def my_mesh(X, Y, C, ax=None, clim=None, c_label=None, title=''):
         ax.set_title(title)
     return im
 
+
+def figshow(fig):
+    try:
+        shell = get_ipython().__class__.__name__
+        if shell == 'ZMQInteractiveShell':  # Jupyter notebook or qtconsole
+            return fig
+        elif shell == 'TerminalInteractiveShell':  # IPython terminal
+            return fig.show()
+    except NameError:  # Regular Python shell
+        return fig.show()
