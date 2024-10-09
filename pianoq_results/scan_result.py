@@ -142,6 +142,7 @@ class ScanResult(object):
             axes[0].set_title(f'Single counts 1 {title}')
             axes[1].set_title(f'Single counts 2 {title}')
             figshow(fig)
+            return fig
         else:
             fig, ax = plt.subplots()
             if only == 1:
@@ -151,7 +152,7 @@ class ScanResult(object):
             ax.invert_xaxis()
             ax.set_title(f'Single counts {only} {title}')
             figshow(fig)
-            return ax
+            return fig
 
     def get_xys(self, single_num=1, num_spots=5, timeout=0, saveto_dir=None, saveto_path=None):
         if single_num == 1:
